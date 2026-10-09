@@ -37,10 +37,17 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   const [internalSubcategory, setInternalSubcategory] = useState<string>('all');
   const selectedSubcategory = controlledSubcategory !== undefined ? controlledSubcategory : internalSubcategory;
   const setSelectedSubcategory = setControlledSubcategory || setInternalSubcategory;
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
+  
+  // Interactive BDT Price Range Slider States
+  const [sliderMaxPrice, setSliderMaxPrice] = useState<number>(40000);
+  const [minPriceInput, setMinPriceInput] = useState<string>('0');
+  const [maxPriceInput, setMaxPriceInput] = useState<string>('40000');
   const [appliedMinPrice, setAppliedMinPrice] = useState<number>(0);
-  const [appliedMaxPrice, setAppliedMaxPrice] = useState<number>(100000);
+  const [appliedMaxPrice, setAppliedMaxPrice] = useState<number>(40000);
+  
+  // Deals Filter
+  const [dealFilter, setDealFilter] = useState<'all' | 'flash_sale' | 'featured' | 'best_seller' | 'best_discount'>('all');
+
   const [sortBy, setSortBy] = useState<'featured' | 'orders-desc' | 'price-asc' | 'price-desc' | 'rating-desc'>('featured');
   const [choiceOnly, setChoiceOnly] = useState(false);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
@@ -48,18 +55,37 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
 
   const activeCategoryMeta = CATEGORIES_METADATA.find((c) => c.id === activeCategory);
 
-  const handleApplyPrice = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAppliedMinPrice(minPrice ? Number(minPrice) : 0);
-    setAppliedMaxPrice(maxPrice ? Number(maxPrice) : 100000);
+  const handleSliderChange = (newMax: number) => {
+    setSliderMaxPrice(newMax);
+    setMaxPriceInput(String(newMax));
+    setAppliedMaxPrice(newMax);
+  };
+
+  const handleApplyCustomPrice = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const minVal = minPriceInput ? Math.max(0, Number(minPriceInput)) : 0;
+    const maxVal = maxPriceInput ? Math.max(minVal, Number(maxPriceInput)) : 40000;
+    setAppliedMinPrice(minVal);
+    setAppliedMaxPrice(maxVal);
+    setSliderMaxPrice(Math.min(40000, maxVal));
+  };
+
+  const handleSelectPricePreset = (min: number, max: number) => {
+    setAppliedMinPrice(min);
+    setAppliedMaxPrice(max);
+    setMinPriceInput(String(min));
+    setMaxPriceInput(String(max));
+    setSliderMaxPrice(Math.min(40000, max));
   };
 
   const handleResetFilters = () => {
     setSelectedSubcategory('all');
-    setMinPrice('');
-    setMaxPrice('');
+    setMinPriceInput('0');
+    setMaxPriceInput('40000');
+    setSliderMaxPrice(40000);
     setAppliedMinPrice(0);
-    setAppliedMaxPrice(100000);
+    setAppliedMaxPrice(40000);
+    setDealFilter('all');
     setChoiceOnly(false);
     setFreeShippingOnly(false);
     setInStockOnly(false);
@@ -89,7 +115,19 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
       );
     }
 
+    // Filter by Price Range in BDT
     list = list.filter((p) => p.priceBDT >= appliedMinPrice && p.priceBDT <= appliedMaxPrice);
+
+    // Deals filter (Flash Sale, Featured, Best Seller, Best Discount)
+    if (dealFilter === 'flash_sale') {
+      list = list.filter((p) => p.isFlashSale);
+    } else if (dealFilter === 'featured') {
+      list = list.filter((p) => p.isFeatured);
+    } else if (dealFilter === 'best_seller') {
+      list = list.filter((p) => p.isBestSeller);
+    } else if (dealFilter === 'best_discount') {
+      list = list.filter((p) => p.isBestDiscount || p.discountPercent >= 40);
+    }
 
     if (choiceOnly) list = list.filter((p) => p.isChoice);
     if (freeShippingOnly) list = list.filter((p) => p.freeShipping);
@@ -122,6 +160,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
     searchQuery,
     appliedMinPrice,
     appliedMaxPrice,
+    dealFilter,
     choiceOnly,
     freeShippingOnly,
     inStockOnly,
@@ -240,36 +279,189 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
             </div>
           )}
 
-          {/* Price Range Filter in BDT */}
-          <div className="space-y-3 pt-3 border-t border-neutral-100">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-              Price (BDT ৳)
-            </h4>
-            <form onSubmit={handleApplyPrice} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  placeholder="Min ৳"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-1/2 px-2 py-1.5 text-xs bg-neutral-50 border border-neutral-300 rounded-lg outline-hidden font-mono"
-                />
-                <span className="text-neutral-400">-</span>
-                <input
-                  type="number"
-                  placeholder="Max ৳"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-1/2 px-2 py-1.5 text-xs bg-neutral-50 border border-neutral-300 rounded-lg outline-hidden font-mono"
-                />
+          {/* Interactive Price Range Slider Filter in BDT */}
+          <div className="space-y-3.5 pt-3 border-t border-neutral-100">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                Price (BDT ৳)
+              </h4>
+              <span className="text-[11px] font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                Max: {formatBDT(appliedMaxPrice)}
+              </span>
+            </div>
+
+            {/* Range Slider Control */}
+            <div className="space-y-1.5">
+              <input
+                type="range"
+                min="1000"
+                max="40000"
+                step="500"
+                value={sliderMaxPrice}
+                onChange={(e) => handleSliderChange(Number(e.target.value))}
+                className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-red-600 focus:outline-hidden"
+              />
+              <div className="flex justify-between text-[10px] text-neutral-400 font-mono">
+                <span>৳1,000</span>
+                <span>৳20,000</span>
+                <span>৳40,000+</span>
+              </div>
+            </div>
+
+            {/* Quick Price Preset Chips */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider block">
+                Quick Presets
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => handleSelectPricePreset(0, 5000)}
+                  className={`px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                    appliedMinPrice === 0 && appliedMaxPrice === 5000
+                      ? 'bg-red-600 text-white font-bold'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  Under ৳5,000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPricePreset(5000, 15000)}
+                  className={`px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                    appliedMinPrice === 5000 && appliedMaxPrice === 15000
+                      ? 'bg-red-600 text-white font-bold'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  ৳5k – ৳15,000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPricePreset(15000, 30000)}
+                  className={`px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                    appliedMinPrice === 15000 && appliedMaxPrice === 30000
+                      ? 'bg-red-600 text-white font-bold'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  ৳15k – ৳30,000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectPricePreset(30000, 100000)}
+                  className={`px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                    appliedMinPrice === 30000
+                      ? 'bg-red-600 text-white font-bold'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  ৳30,000+
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Min / Max Exact Inputs */}
+            <form onSubmit={handleApplyCustomPrice} className="space-y-2 pt-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-1/2">
+                  <span className="text-[10px] text-neutral-400 block mb-0.5">Min (৳)</span>
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPriceInput}
+                    onChange={(e) => setMinPriceInput(e.target.value)}
+                    className="w-full px-2 py-1 text-xs bg-neutral-50 border border-neutral-300 rounded-lg outline-hidden font-mono"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <span className="text-[10px] text-neutral-400 block mb-0.5">Max (৳)</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPriceInput}
+                    onChange={(e) => setMaxPriceInput(e.target.value)}
+                    className="w-full px-2 py-1 text-xs bg-neutral-50 border border-neutral-300 rounded-lg outline-hidden font-mono"
+                  />
+                </div>
               </div>
               <button
                 type="submit"
                 className="w-full py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
               >
-                Apply Range
+                Set Custom Price
               </button>
             </form>
+          </div>
+
+          {/* Special Deals & Campaigns Filter */}
+          <div className="space-y-2.5 pt-3 border-t border-neutral-100 text-xs">
+            <h4 className="font-bold uppercase tracking-wider text-neutral-500">
+              Deals & Highlights
+            </h4>
+            
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dealCategory"
+                checked={dealFilter === 'all'}
+                onChange={() => setDealFilter('all')}
+                className="text-red-600 focus:ring-0"
+              />
+              <span className="font-semibold text-neutral-800">All Marketplace Goods</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dealCategory"
+                checked={dealFilter === 'flash_sale'}
+                onChange={() => setDealFilter('flash_sale')}
+                className="text-red-600 focus:ring-0"
+              />
+              <span className="font-bold text-red-600 flex items-center gap-1">
+                <span>⚡ Flash Sale (Flash Sell)</span>
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dealCategory"
+                checked={dealFilter === 'featured'}
+                onChange={() => setDealFilter('featured')}
+                className="text-red-600 focus:ring-0"
+              />
+              <span className="font-bold text-amber-700 flex items-center gap-1">
+                <span>⭐ Featured Products</span>
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dealCategory"
+                checked={dealFilter === 'best_seller'}
+                onChange={() => setDealFilter('best_seller')}
+                className="text-red-600 focus:ring-0"
+              />
+              <span className="font-bold text-blue-700 flex items-center gap-1">
+                <span>🏆 Best Sellers (Top Sold)</span>
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="radio"
+                name="dealCategory"
+                checked={dealFilter === 'best_discount'}
+                onChange={() => setDealFilter('best_discount')}
+                className="text-red-600 focus:ring-0"
+              />
+              <span className="font-bold text-emerald-700 flex items-center gap-1">
+                <span>🏷️ Best Discount (40%+ OFF)</span>
+              </span>
+            </label>
           </div>
 
           {/* Special Badges Checkboxes */}
@@ -314,10 +506,64 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
         {/* Right: Products Catalog Grid */}
         <div className="lg:col-span-9 space-y-4">
           
-          {/* Top Sort Bar */}
+          {/* Top Deals Filter Pills Bar */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+            <button
+              onClick={() => setDealFilter('all')}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors cursor-pointer ${
+                dealFilter === 'all'
+                  ? 'bg-neutral-900 text-white shadow-2xs'
+                  : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'
+              }`}
+            >
+              All Items ({products.length})
+            </button>
+            <button
+              onClick={() => setDealFilter('flash_sale')}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer ${
+                dealFilter === 'flash_sale'
+                  ? 'bg-red-600 text-white shadow-2xs'
+                  : 'bg-white text-red-600 hover:bg-red-50 border border-red-200'
+              }`}
+            >
+              <span>⚡ Flash Sale</span>
+            </button>
+            <button
+              onClick={() => setDealFilter('featured')}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer ${
+                dealFilter === 'featured'
+                  ? 'bg-amber-500 text-neutral-950 shadow-2xs'
+                  : 'bg-white text-amber-800 hover:bg-amber-50 border border-amber-200'
+              }`}
+            >
+              <span>⭐ Featured Products</span>
+            </button>
+            <button
+              onClick={() => setDealFilter('best_seller')}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer ${
+                dealFilter === 'best_seller'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'bg-white text-blue-700 hover:bg-blue-50 border border-blue-200'
+              }`}
+            >
+              <span>🏆 Best Sellers</span>
+            </button>
+            <button
+              onClick={() => setDealFilter('best_discount')}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors flex items-center gap-1 cursor-pointer ${
+                dealFilter === 'best_discount'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-200'
+              }`}
+            >
+              <span>🏷️ Best Discount (40%+ OFF)</span>
+            </button>
+          </div>
+
+          {/* Top Sort & Summary Bar */}
           <div className="bg-white rounded-xl border border-neutral-200 p-3 sm:px-4 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="text-neutral-600 font-medium">
-              <strong>{filteredProducts.length}</strong> items available in BDT
+              <strong>{filteredProducts.length}</strong> items in range ({formatBDT(appliedMinPrice)} – {formatBDT(appliedMaxPrice)})
             </div>
 
             {/* Sorting Controls */}
@@ -377,7 +623,27 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      <div className="absolute top-2 left-2 flex items-center gap-1">
+                      <div className="absolute top-2 left-2 flex flex-wrap items-center gap-1">
+                        {product.isFlashSale && (
+                          <span className="bg-red-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-2xs">
+                            ⚡ Flash Sale
+                          </span>
+                        )}
+                        {product.isBestSeller && (
+                          <span className="bg-blue-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-2xs">
+                            🏆 #{product.bestSellerRank || 1} Top Seller
+                          </span>
+                        )}
+                        {product.isFeatured && (
+                          <span className="bg-amber-400 text-neutral-950 text-[10px] font-black px-1.5 py-0.5 rounded shadow-2xs">
+                            ⭐ Featured
+                          </span>
+                        )}
+                        {product.discountPercent >= 45 && (
+                          <span className="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-2xs">
+                            🏷️ {product.discountPercent}% OFF
+                          </span>
+                        )}
                         <span className="bg-amber-400 text-neutral-950 text-[10px] font-black px-1.5 py-0.5 rounded shadow-2xs">
                           Choice
                         </span>

@@ -52,6 +52,7 @@ export interface ProductReview {
   comment: string;
   verified: boolean;
   userImage?: string;
+  helpfulCount?: number;
 }
 
 export interface Product {
@@ -69,7 +70,7 @@ export interface Product {
   ordersCount: number;
   inStock: boolean;
   stockCount: number;
-  badge?: 'Choice' | 'SuperDeal' | 'TopBrand' | 'FlashSale';
+  badge?: 'Choice' | 'SuperDeal' | 'TopBrand' | 'FlashSale' | 'BestSeller' | 'BestDiscount' | 'Featured';
   isChoice: boolean;
   freeShipping: boolean;
   estimatedDeliveryDays: number;
@@ -90,6 +91,12 @@ export interface Product {
     positiveFeedbackRate: string;
   };
   reviews: ProductReview[];
+  isFlashSale?: boolean;
+  isFeatured?: boolean;
+  isBestSeller?: boolean;
+  isBestDiscount?: boolean;
+  bestSellerRank?: number;
+  claimedPercent?: number;
 }
 
 export interface CartItem {
