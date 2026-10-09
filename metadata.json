@@ -1,0 +1,6 @@
+{
+  "name": "Atelier Nord — Curated Design Goods",
+  "description": "High-fidelity, future-ready e-commerce storefront featuring curated architectural objects, lighting, and artisanal design goods with modular component architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
