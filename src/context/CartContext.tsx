@@ -1,21 +1,24 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { Cart, CartItem, Product, ProductVariantColor, ProductVariantMaterial } from '../types';
+import { Cart, CartItem, Product, ProductVariantColor, ProductVariantSpec } from '../types';
 import { api } from '../services/api';
 
 interface CartContextType {
   cart: Cart;
   itemCount: number;
-  isCartOpen: boolean;
-  openCart: () => void;
-  closeCart: () => void;
-  toggleCart: () => void;
+  isCartDrawerOpen: boolean;
+  openCartDrawer: () => void;
+  closeCartDrawer: () => void;
+  toggleCartDrawer: () => void;
   addItem: (
     product: Product,
     selectedColor?: ProductVariantColor,
-    selectedMaterial?: ProductVariantMaterial,
+    selectedSpec?: ProductVariantSpec,
     quantity?: number
   ) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
+  toggleItemSelection: (itemId: string) => void;
+  toggleSelectAll: () => void;
+  allSelected: boolean;
   removeItem: (itemId: string) => void;
   clearCart: () => void;
   appliedPromo: Cart['appliedPromo'];
@@ -25,15 +28,15 @@ interface CartContextType {
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
   isWishlisted: (productId: string) => boolean;
-  freeShippingThreshold: number;
-  freeShippingRemaining: number;
+  freeShippingThresholdBDT: number;
+  freeShippingRemainingBDT: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const STORAGE_CART_ITEMS = 'atelier_cart_items';
-const STORAGE_WISHLIST = 'atelier_wishlist';
-const FREE_SHIPPING_THRESHOLD = 250;
+const STORAGE_CART_ITEMS = 'nexus_cart_items_bdt';
+const STORAGE_WISHLIST = 'nexus_wishlist';
+const FREE_SHIPPING_THRESHOLD_BDT = 2500; // Free shipping over ৳2,500
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>(() => {
@@ -54,7 +57,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<Cart['appliedPromo']>(undefined);
   const [promoError, setPromoError] = useState<string | null>(null);
 
@@ -62,7 +65,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(STORAGE_CART_ITEMS, JSON.stringify(items));
     } catch (e) {
-      console.warn('Failed saving cart to localStorage', e);
+      console.warn('LocalStorage error saving cart:', e);
     }
   }, [items]);
 
@@ -70,34 +73,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(STORAGE_WISHLIST, JSON.stringify(wishlist));
     } catch (e) {
-      console.warn('Failed saving wishlist to localStorage', e);
+      console.warn('LocalStorage error saving wishlist:', e);
     }
   }, [wishlist]);
 
-  const subtotal = useMemo(() => {
-    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [items]);
+  // Calculations for selected items (AliExpress style)
+  const selectedItems = useMemo(() => items.filter((i) => i.selected), [items]);
 
-  const discount = useMemo(() => {
+  const subtotalBDT = useMemo(() => {
+    return selectedItems.reduce((sum, item) => sum + item.unitPriceBDT * item.quantity, 0);
+  }, [selectedItems]);
+
+  const discountBDT = useMemo(() => {
     if (!appliedPromo) return 0;
-    return Math.round((subtotal * appliedPromo.discountPercent) / 100);
-  }, [subtotal, appliedPromo]);
+    return appliedPromo.discountBDT;
+  }, [appliedPromo]);
 
-  const shipping = useMemo(() => {
-    if (items.length === 0) return 0;
-    return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 25;
-  }, [subtotal, items.length]);
+  const shippingBDT = useMemo(() => {
+    if (selectedItems.length === 0) return 0;
+    return subtotalBDT >= FREE_SHIPPING_THRESHOLD_BDT ? 0 : 120; // ৳120 standard courier inside BD
+  }, [subtotalBDT, selectedItems.length]);
 
-  const total = useMemo(() => {
-    return Math.max(0, subtotal - discount + shipping);
-  }, [subtotal, discount, shipping]);
+  const totalBDT = useMemo(() => {
+    return Math.max(0, subtotalBDT - discountBDT + shippingBDT);
+  }, [subtotalBDT, discountBDT, shippingBDT]);
 
   const cart: Cart = {
     items,
-    subtotal,
-    discount,
-    shipping,
-    total,
+    subtotalBDT,
+    discountBDT,
+    shippingBDT,
+    totalBDT,
     appliedPromo,
   };
 
@@ -105,17 +111,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return items.reduce((count, item) => count + item.quantity, 0);
   }, [items]);
 
-  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
+  const allSelected = useMemo(() => {
+    return items.length > 0 && items.every((i) => i.selected);
+  }, [items]);
+
+  const freeShippingRemainingBDT = Math.max(0, FREE_SHIPPING_THRESHOLD_BDT - subtotalBDT);
 
   const addItem = (
     product: Product,
     selectedColor?: ProductVariantColor,
-    selectedMaterial?: ProductVariantMaterial,
+    selectedSpec?: ProductVariantSpec,
     quantity: number = 1
   ) => {
     const activeColor = selectedColor || product.colors[0];
-    const unitPrice = product.price + (selectedMaterial?.surcharge || 0);
-    const instanceKey = `${product.id}_${activeColor.name}_${selectedMaterial?.name || 'default'}`;
+    const unitPrice = product.priceBDT + (selectedSpec?.surchargeBDT || 0);
+    const instanceKey = `${product.id}_${activeColor.name}_${selectedSpec?.name || 'default'}`;
 
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.id === instanceKey);
@@ -124,6 +134,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         next[existingIndex] = {
           ...next[existingIndex],
           quantity: next[existingIndex].quantity + quantity,
+          selected: true,
         };
         return next;
       }
@@ -135,14 +146,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           productId: product.id,
           product,
           selectedColor: activeColor,
-          selectedMaterial,
+          selectedSpec,
           quantity,
-          price: unitPrice,
+          unitPriceBDT: unitPrice,
+          selected: true,
         },
       ];
     });
 
-    setIsCartOpen(true);
+    setIsCartDrawerOpen(true);
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {
@@ -153,6 +165,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setItems((prev) =>
       prev.map((item) => (item.id === itemId ? { ...item, quantity } : item))
     );
+  };
+
+  const toggleItemSelection = (itemId: string) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, selected: !item.selected } : item))
+    );
+  };
+
+  const toggleSelectAll = () => {
+    const nextState = !allSelected;
+    setItems((prev) => prev.map((item) => ({ ...item, selected: nextState })));
   };
 
   const removeItem = (itemId: string) => {
@@ -166,11 +189,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const applyPromoCode = async (code: string): Promise<boolean> => {
     setPromoError(null);
-    const res = await api.promos.validateCode(code);
-    if (res.valid && res.discountPercent) {
+    const res = await api.promos.validateCode(code, subtotalBDT);
+    if (res.valid && res.discountBDT !== undefined) {
       setAppliedPromo({
         code: code.toUpperCase().trim(),
-        discountPercent: res.discountPercent,
+        discountBDT: res.discountBDT,
         description: res.description || '',
       });
       return true;
@@ -198,12 +221,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         cart,
         itemCount,
-        isCartOpen,
-        openCart: () => setIsCartOpen(true),
-        closeCart: () => setIsCartOpen(false),
-        toggleCart: () => setIsCartOpen((prev) => !prev),
+        isCartDrawerOpen,
+        openCartDrawer: () => setIsCartDrawerOpen(true),
+        closeCartDrawer: () => setIsCartDrawerOpen(false),
+        toggleCartDrawer: () => setIsCartDrawerOpen((prev) => !prev),
         addItem,
         updateQuantity,
+        toggleItemSelection,
+        toggleSelectAll,
+        allSelected,
         removeItem,
         clearCart,
         appliedPromo,
@@ -213,8 +239,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         wishlist,
         toggleWishlist,
         isWishlisted,
-        freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
-        freeShippingRemaining,
+        freeShippingThresholdBDT: FREE_SHIPPING_THRESHOLD_BDT,
+        freeShippingRemainingBDT,
       }}
     >
       {children}

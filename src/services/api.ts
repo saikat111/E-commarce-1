@@ -1,33 +1,29 @@
 /**
- * Atelier Nord - API Service & Repository Layer
- * 
- * Future-Ready Architecture:
- * In Phase 1, this repository handles client-side state simulation with promise-based async signatures.
- * In Phase 2 (Backend Integration), each method connects directly to:
- * - Next.js Route Handlers (`/api/products`, `/api/orders`, `/api/cart`)
- * - Next.js Server Actions (`export async function createOrderAction(data)`)
- * - Headless Commerce Engine (Medusa.js, Shopify Storefront API, Supabase, or Stripe)
+ * Marketplace API Service & Repository Layer
+ * Supports BDT Currency & Multi-Page Storefront Operations
  */
 
 import { Cart, CartItem, CustomerShippingInfo, Order, Product, ProductCategory, ProductFilterState } from '../types';
 import { PRODUCTS_CATALOG } from '../data/products';
 
-// Simulated database storage in localStorage for order history & persistence
-const STORAGE_ORDERS_KEY = 'atelier_nord_orders';
+const STORAGE_ORDERS_KEY = 'nexus_marketplace_orders';
 
 export const api = {
   products: {
     /**
-     * Fetch all products with filtering, searching, and sorting
+     * Fetch products with multi-facet filters, BDT price ranges, subcategories, and sorting
      */
     async getAll(filters?: Partial<ProductFilterState>): Promise<{ products: Product[]; total: number }> {
-      // Emulate brief asynchronous microtask to match Next.js fetch behavior
-      await new Promise((resolve) => setTimeout(resolve, 80));
+      await new Promise((resolve) => setTimeout(resolve, 60));
 
       let results = [...PRODUCTS_CATALOG];
 
       if (filters?.category && filters.category !== 'all') {
         results = results.filter((p) => p.category === filters.category);
+      }
+
+      if (filters?.subcategory && filters.subcategory !== 'all') {
+        results = results.filter((p) => p.subcategory.toLowerCase() === filters.subcategory!.toLowerCase());
       }
 
       if (filters?.searchQuery && filters.searchQuery.trim().length > 0) {
@@ -37,36 +33,49 @@ export const api = {
             p.name.toLowerCase().includes(query) ||
             p.subtitle.toLowerCase().includes(query) ||
             p.description.toLowerCase().includes(query) ||
+            p.subcategory.toLowerCase().includes(query) ||
             p.category.toLowerCase().includes(query) ||
-            p.materials.some((m) => m.toLowerCase().includes(query))
+            p.keyFeatures.some((f) => f.toLowerCase().includes(query))
         );
       }
 
-      if (filters?.maxPrice) {
-        results = results.filter((p) => p.price <= filters.maxPrice!);
+      if (filters?.minPriceBDT !== undefined) {
+        results = results.filter((p) => p.priceBDT >= filters.minPriceBDT!);
+      }
+
+      if (filters?.maxPriceBDT !== undefined && filters.maxPriceBDT > 0) {
+        results = results.filter((p) => p.priceBDT <= filters.maxPriceBDT!);
       }
 
       if (filters?.inStockOnly) {
         results = results.filter((p) => p.inStock);
       }
 
+      if (filters?.choiceOnly) {
+        results = results.filter((p) => p.isChoice);
+      }
+
+      if (filters?.freeShippingOnly) {
+        results = results.filter((p) => p.freeShipping);
+      }
+
       if (filters?.sortBy) {
         switch (filters.sortBy) {
+          case 'orders-desc':
+            results.sort((a, b) => b.ordersCount - a.ordersCount);
+            break;
           case 'price-asc':
-            results.sort((a, b) => a.price - b.price);
+            results.sort((a, b) => a.priceBDT - b.priceBDT);
             break;
           case 'price-desc':
-            results.sort((a, b) => b.price - a.price);
+            results.sort((a, b) => b.priceBDT - a.priceBDT);
             break;
-          case 'rating':
+          case 'rating-desc':
             results.sort((a, b) => b.rating - a.rating);
-            break;
-          case 'newest':
-            results.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
             break;
           case 'featured':
           default:
-            results.sort((a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0));
+            results.sort((a, b) => (b.badge ? 1 : 0) - (a.badge ? 1 : 0));
             break;
         }
       }
@@ -75,37 +84,53 @@ export const api = {
     },
 
     /**
-     * Fetch single product by id or slug
+     * Fetch single product by id
      */
     async getById(id: string): Promise<Product | null> {
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      await new Promise((resolve) => setTimeout(resolve, 30));
       return PRODUCTS_CATALOG.find((p) => p.id === id) || null;
     },
 
     async getBySlug(slug: string): Promise<Product | null> {
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      await new Promise((resolve) => setTimeout(resolve, 30));
       return PRODUCTS_CATALOG.find((p) => p.slug === slug) || null;
     },
 
     /**
-     * Fetch related products within same or complementary categories
+     * Fetch related products for the PDP page (same category + complementary items)
      */
-    async getRelated(productId: string, limit = 3): Promise<Product[]> {
+    async getRelated(productId: string, limit = 4): Promise<Product[]> {
       const current = PRODUCTS_CATALOG.find((p) => p.id === productId);
       if (!current) return PRODUCTS_CATALOG.slice(0, limit);
 
       const related = PRODUCTS_CATALOG.filter(
-        (p) => p.id !== productId && (p.category === current.category || p.isBestseller)
+        (p) => p.id !== productId && (p.category === current.category || p.subcategory === current.subcategory)
       );
 
+      if (related.length < limit) {
+        const others = PRODUCTS_CATALOG.filter((p) => p.id !== productId && !related.includes(p));
+        return [...related, ...others].slice(0, limit);
+      }
+
       return related.slice(0, limit);
+    },
+
+    /**
+     * Fetch SuperDeals / Flash Sale items
+     */
+    async getSuperDeals(limit = 6): Promise<Product[]> {
+      return PRODUCTS_CATALOG.filter((p) => p.discountPercent >= 33 || p.badge === 'SuperDeal').slice(0, limit);
+    },
+
+    /**
+     * Fetch AliExpress Choice items
+     */
+    async getChoicePicks(limit = 8): Promise<Product[]> {
+      return PRODUCTS_CATALOG.filter((p) => p.isChoice).slice(0, limit);
     },
   },
 
   orders: {
-    /**
-     * Create and record a verified order
-     */
     async create(orderPayload: {
       customer: CustomerShippingInfo;
       items: CartItem[];
@@ -113,8 +138,8 @@ export const api = {
     }): Promise<Order> {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const orderNumber = `NOR-${new Date().getFullYear()}-${randomSuffix}`;
+      const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+      const orderNumber = `BD-${new Date().getFullYear()}-${randomSuffix}`;
       
       const newOrder: Order = {
         id: `ord_${Date.now()}`,
@@ -122,13 +147,13 @@ export const api = {
         createdAt: new Date().toISOString(),
         items: orderPayload.items,
         customer: orderPayload.customer,
-        subtotal: orderPayload.cart.subtotal,
-        discount: orderPayload.cart.discount,
-        shipping: orderPayload.cart.shipping,
-        total: orderPayload.cart.total,
+        subtotalBDT: orderPayload.cart.subtotalBDT,
+        discountBDT: orderPayload.cart.discountBDT,
+        shippingBDT: orderPayload.cart.shippingBDT,
+        totalBDT: orderPayload.cart.totalBDT,
         status: 'confirmed',
-        trackingNumber: `TRACK-EU-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
-        estimatedDeliveryDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+        trackingNumber: `SA-BD-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+        estimatedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
           weekday: 'long',
           month: 'short',
           day: 'numeric',
@@ -156,39 +181,38 @@ export const api = {
   },
 
   promos: {
-    /**
-     * Validate promotional discount codes
-     */
-    async validateCode(code: string): Promise<{
+    async validateCode(code: string, subtotalBDT: number): Promise<{
       valid: boolean;
-      discountPercent?: number;
+      discountBDT?: number;
       description?: string;
       message: string;
     }> {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       const clean = code.toUpperCase().trim();
 
-      if (clean === 'WELCOME10') {
+      if (clean === 'ALIBD500') {
+        const discount = Math.min(500, Math.round(subtotalBDT * 0.2));
         return {
           valid: true,
-          discountPercent: 10,
-          description: '10% New Collector Courtesy Discount',
-          message: 'Code applied! 10% off your entire order.',
+          discountBDT: discount,
+          description: '৳500 OFF Special Welcome Voucher',
+          message: 'Code ALIBD500 applied! ৳500 discount added.',
         };
       }
 
-      if (clean === 'ARCHITECT15') {
+      if (clean === 'CHOICE10') {
+        const discount = Math.round(subtotalBDT * 0.1);
         return {
           valid: true,
-          discountPercent: 15,
-          description: '15% Studio & Trade Courtesy Discount',
-          message: 'Code applied! 15% off trade order.',
+          discountBDT: discount,
+          description: '10% Extra Choice Discount',
+          message: 'Code CHOICE10 applied! 10% off your entire order.',
         };
       }
 
       return {
         valid: false,
-        message: 'Invalid code. Try WELCOME10 or ARCHITECT15',
+        message: 'Invalid code. Try ALIBD500 or CHOICE10',
       };
     },
   },
@@ -198,7 +222,7 @@ export const api = {
       await new Promise((resolve) => setTimeout(resolve, 200));
       return {
         success: true,
-        message: `Thank you for subscribing (${email}). You will receive our seasonal monographs.`,
+        message: `Subscribed ${email} for exclusive Bangladesh flash deals and coupons.`,
       };
     },
   },

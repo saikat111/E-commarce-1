@@ -1,27 +1,45 @@
 /**
- * Atelier Nord - Domain Types & Interfaces
- * Designed for Next.js and Full-Stack Backend Integration
+ * Domain Types for Ultra-Modern Multi-Page Marketplace
+ * Pricing in Bangladeshi Taka (BDT)
  */
+
+export type PageRoute = 
+  | 'home'
+  | 'category'
+  | 'product'
+  | 'cart'
+  | 'checkout'
+  | 'wishlist';
 
 export type ProductCategory = 
   | 'all'
-  | 'lighting'
-  | 'objects'
-  | 'furniture'
-  | 'tableware'
-  | 'acoustics'
-  | 'horology';
+  | 'electronics_audio'
+  | 'smart_lighting'
+  | 'fashion_watches'
+  | 'furniture_living'
+  | 'kitchen_tableware'
+  | 'lifestyle_gadgets';
+
+export interface CategoryMeta {
+  id: ProductCategory;
+  name: string;
+  shortName: string;
+  icon: string;
+  bannerImage: string;
+  subcategories: string[];
+}
 
 export interface ProductVariantColor {
   name: string;
   hex: string;
   label: string;
+  image?: string;
 }
 
-export interface ProductVariantMaterial {
+export interface ProductVariantSpec {
   name: string;
-  finish: string;
-  surcharge?: number;
+  label: string;
+  surchargeBDT?: number;
 }
 
 export interface ProductReview {
@@ -33,6 +51,7 @@ export interface ProductReview {
   title: string;
   comment: string;
   verified: boolean;
+  userImage?: string;
 }
 
 export interface Product {
@@ -41,69 +60,71 @@ export interface Product {
   name: string;
   subtitle: string;
   category: ProductCategory;
-  price: number;
-  compareAtPrice?: number;
+  subcategory: string;
+  priceBDT: number;
+  originalPriceBDT: number;
+  discountPercent: number;
   rating: number;
   reviewsCount: number;
-  isNew?: boolean;
-  isBestseller?: boolean;
+  ordersCount: number;
   inStock: boolean;
   stockCount: number;
-  badge?: string;
+  badge?: 'Choice' | 'SuperDeal' | 'TopBrand' | 'FlashSale';
+  isChoice: boolean;
+  freeShipping: boolean;
+  estimatedDeliveryDays: number;
+  images: string[];
+  imageUrl: string;
+  secondaryImageUrl?: string;
   description: string;
-  story: string;
-  dimensions: {
-    height: string;
-    width: string;
-    depth?: string;
-    weight: string;
-  };
-  materials: string[];
+  keyFeatures: string[];
+  specifications: Record<string, string>;
   colors: ProductVariantColor[];
-  materialsVariants?: ProductVariantMaterial[];
-  leadTime: string;
+  specsVariants?: ProductVariantSpec[];
   origin: string;
-  careInstructions: string;
+  warranty: string;
+  seller: {
+    name: string;
+    rating: number;
+    followers: string;
+    positiveFeedbackRate: string;
+  };
   reviews: ProductReview[];
-  visualId: 'sculptural_lamp' | 'acoustic_speaker' | 'ceramic_carafe' | 'chronograph_watch' | 'lounge_chair' | 'marble_altar' | 'pendulum_clock' | 'linen_throw';
 }
 
 export interface CartItem {
-  id: string; // unique item instance id
+  id: string;
   productId: string;
   product: Product;
   selectedColor: ProductVariantColor;
-  selectedMaterial?: ProductVariantMaterial;
+  selectedSpec?: ProductVariantSpec;
   quantity: number;
-  price: number;
+  unitPriceBDT: number;
+  selected: boolean;
 }
 
 export interface Cart {
   items: CartItem[];
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  total: number;
+  subtotalBDT: number;
+  discountBDT: number;
+  shippingBDT: number;
+  totalBDT: number;
   appliedPromo?: {
     code: string;
-    discountPercent: number;
+    discountBDT: number;
     description: string;
   };
 }
 
 export interface CustomerShippingInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
+  fullName: string;
   phone: string;
-  addressLine1: string;
-  addressLine2?: string;
+  division: string;
   city: string;
-  state: string;
+  area: string;
+  address: string;
   postalCode: string;
-  country: string;
-  shippingSpeed: 'standard' | 'express';
-  paymentMethod: 'card' | 'cod' | 'apple_pay';
+  paymentMethod: 'bkash' | 'nagad' | 'card' | 'cod';
   cardDetails?: {
     cardNumber: string;
     expiry: string;
@@ -117,10 +138,10 @@ export interface Order {
   createdAt: string;
   items: CartItem[];
   customer: CustomerShippingInfo;
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  total: number;
+  subtotalBDT: number;
+  discountBDT: number;
+  shippingBDT: number;
+  totalBDT: number;
   status: 'confirmed' | 'processing' | 'shipped' | 'delivered';
   trackingNumber: string;
   estimatedDeliveryDate: string;
@@ -128,8 +149,12 @@ export interface Order {
 
 export interface ProductFilterState {
   category: ProductCategory;
+  subcategory?: string;
   searchQuery: string;
-  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'rating' | 'newest';
-  maxPrice: number;
+  sortBy: 'featured' | 'orders-desc' | 'price-asc' | 'price-desc' | 'rating-desc';
+  minPriceBDT: number;
+  maxPriceBDT: number;
   inStockOnly: boolean;
+  choiceOnly: boolean;
+  freeShippingOnly: boolean;
 }
