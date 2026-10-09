@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Search, ShoppingCart, Heart, User, ChevronDown, Flame, 
-  Sparkles, ShieldCheck, HelpCircle, Package, ArrowRight, Menu, X, Camera, Truck
+  Sparkles, ShieldCheck, HelpCircle, Package, ArrowRight, Menu, X, Camera, Truck, Compass
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { ProductCategory, PageRoute } from '../../types';
@@ -324,6 +324,20 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               <span>Choice Day</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onNavigate('home');
+                setTimeout(() => {
+                  const el = document.getElementById('recommended-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+              className="py-2.5 hover:text-red-600 transition-colors cursor-pointer flex items-center gap-1 text-rose-600 font-bold"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>For You</span>
             </button>
 
             {CATEGORIES_METADATA.slice(0, 4).map((cat) => (

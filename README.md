@@ -26,14 +26,34 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Profile avatar with Diamond Choice / Platinum membership tier status.
   - Key performance metrics: *Total Orders Placed*, *Active In-Transit Shipments*, and *Nexus Bazaar Coins* (redeemable for checkout discounts).
 - **Tabbed Architecture:**
-  - **Dashboard Overview:** Real-time metrics breakdown, highlighted active shipment card with quick jump to live tracker, and recent order history preview.
+  - **Dashboard Overview:** Real-time metrics breakdown, highlighted active shipment card with quick jump to live tracker, recent order history preview, and recently viewed products.
   - **Track Shipments:** Split view with live search by order/tracking number, status filters (*All, In Transit, Delivered*), and package contents breakdown.
   - **Order History:** Complete log of previous orders with date stamps, payment methods, line items, and tracking shortcuts.
   - **Saved Wishlist:** One-click Add to Cart, product detail redirection, and item deletion.
   - **Delivery Addresses:** Multiple address cards (Home, Office) with default selection toggle for 1-click checkout.
   - **Account Settings:** Editable customer profile, Bangladesh phone number, and security preferences.
 
-### 3. 🎯 Advanced Multi-Page Storefront Navigation
+### 3. 🧠 Smart 'Recommended for You' Heuristic Recommendation Engine
+- **Dedicated Homepage Feed (`RecommendedForYou.tsx`):**
+  - Prominently positioned on the homepage with real-time adaptation to user browsing behavior and viewed products.
+- **Multi-Factor Heuristic Scoring Model (`recommendationEngine.ts`):**
+  - **Category Affinity Scoring:** Analyzes viewed departments with time-decay weights, boosting high-interest categories.
+  - **Subcategory & Style Synergy:** Recommends complementary and matching subcategories based on recent clicks.
+  - **Price Range Proximity:** Calculates the weighted average price of inspected goods and prioritizes items within ±35% of the user's viewed budget.
+  - **Last-Viewed Product Pairing:** Identifies companion products frequently paired with the most recently inspected item.
+  - **Wishlist & Cart Synergy:** Boosts saved wishlist items while preventing redundant recommendations for items already placed in the shopping bag.
+- **Explainable Match Scores & Transparent Badges:**
+  - Every card displays a confidence match pill (e.g., *🎯 97% Match*, *Audio Affinity*, *Budget Fit ~৳5,400*).
+  - Hover/preview explanation detailing *why* the item was selected by the heuristic.
+- **Live Taste Profile Bar & Quick Persona Simulator:**
+  - Transparent inspector revealing total inspected items, primary category, and estimated budget.
+  - One-click Persona Simulators (**Audiophile**, **Smart Home**, **Horology & Watches**, **Interior Living**) enabling instant live demonstration of the recommendation engine.
+- **Collapsible 'Recently Viewed' Mini-Shelf (`browsingHistory.ts`):**
+  - Persistent horizontal scroll of recently viewed products stored in `localStorage` with view counts and clear/remove options.
+- **Intelligent Cold-Start Fallback:**
+  - Seamlessly welcomes first-time visitors with high-conversion Choice and best-selling curations across diverse categories.
+
+### 4. 🎯 Advanced Multi-Page Storefront Navigation
 - **True Multi-Page Routing (No Single-Page Monolith):**
   - Dynamic browser history push state with URL hash syncing (`#home`, `#category/electronics_audio`, `#product/elec_01`, `#cart`, `#checkout`, `#wishlist`, `#dashboard`).
   - Native browser back and forward button support.
@@ -44,7 +64,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Visual image search button and trending Bangladesh search tags.
   - Account action button with live indicator connecting directly to the user dashboard.
 
-### 4. 🏷️ Category Explorer with Interactive BDT Price Range Slider
+### 5. 🏷️ Category Explorer with Interactive BDT Price Range Slider
 - **Dual-Handle / Dynamic Price Range Filter (`CategoryPage.tsx`):**
   - Range slider in Bangladeshi Taka ranging from **৳0 to ৳50,000+** with ৳500 step precision.
   - Instant Min & Max number inputs for exact value entry.
@@ -52,7 +72,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Deal filter toggles: **Flash Deals**, **Featured Items**, **Best Sellers**, and **Super Discounts**.
   - Service filters: *AliExpress Choice Only*, *Free Shipping Nationwide*, and *In Stock Only*.
 
-### 5. 📸 Dedicated Product Detail Page (PDP) & Customer Reviews
+### 6. 📸 Dedicated Product Detail Page (PDP) & Customer Reviews
 - **Multi-Photo Image Gallery:**
   - 4 distinct, high-resolution photographs per product with thumbnail selector.
   - Zoom-in preview modal / lightbox for fine detail inspection.
@@ -65,7 +85,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Instant **Buy Now** button which populates cart and immediately routes to express checkout.
   - Related items carousel ("More to Love / Customers Also Bought").
 
-### 6. 💳 Bangladesh-Tailored Express Checkout & Payments
+### 7. 💳 Bangladesh-Tailored Express Checkout & Payments
 - **Nationwide Logistics & Address Form:**
   - Division selector (Dhaka, Chittagong, Rajshahi, Khulna, Barisal, Sylhet, Rangpur, Mymensingh).
   - City, Area, Street address, and contact number (+880).

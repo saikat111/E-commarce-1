@@ -11,6 +11,7 @@ import { PRODUCTS_CATALOG } from '../../data/products';
 import { useCart } from '../../context/CartContext';
 import { OrderTrackingSection } from './OrderTrackingSection';
 import { formatBDT } from '../../utils/formatters';
+import { getRecentlyViewedProducts } from '../../services/browsingHistory';
 
 interface UserDashboardProps {
   onNavigate: (page: PageRoute) => void;
@@ -42,6 +43,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   const wishlistedProducts = wishlist
     .map((id) => PRODUCTS_CATALOG.find((p) => p.id === id))
     .filter((p): p is Product => p !== undefined);
+
+  // Retrieve recently viewed items for dashboard overview
+  const recentlyViewed = getRecentlyViewedProducts(PRODUCTS_CATALOG, 4);
 
   // User Profile details
   const [profile, setProfile] = useState<UserProfile>({
@@ -412,6 +416,73 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* Personalized Heuristic Recommendations Banner */}
+              <div className="bg-gradient-to-r from-neutral-900 via-neutral-800 to-rose-950 rounded-2xl p-6 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 fill-white" />
+                    </div>
+                    <h4 className="font-bold text-sm text-white">Recommended for You on Homepage</h4>
+                  </div>
+                  <p className="text-xs text-neutral-300 max-w-xl">
+                    Our live heuristic engine analyzes your viewed products and calculates real-time match scores in BDT.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onNavigate('home')}
+                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-all shrink-0 cursor-pointer shadow-sm flex items-center gap-1.5 self-start sm:self-auto"
+                >
+                  <span>Explore Personalized Feed</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Recently Viewed Products Strip */}
+              {recentlyViewed.length > 0 && (
+                <div className="bg-white rounded-2xl border border-neutral-200/80 p-6 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-neutral-500" />
+                      <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
+                        Recently Viewed Items ({recentlyViewed.length})
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => onNavigate('home')}
+                      className="text-xs font-bold text-red-600 hover:text-red-700 cursor-pointer"
+                    >
+                      See All Recommendations →
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {recentlyViewed.map(({ product }) => (
+                      <div
+                        key={product.id}
+                        onClick={() => onSelectProduct(product)}
+                        className="group bg-neutral-50 hover:bg-white rounded-xl border border-neutral-200 p-2.5 transition-all cursor-pointer shadow-2xs flex flex-col justify-between"
+                      >
+                        <div className="relative aspect-video rounded-lg overflow-hidden bg-neutral-200 mb-2">
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <h4 className="text-xs font-bold text-neutral-900 truncate group-hover:text-red-600">
+                          {product.name}
+                        </h4>
+                        <div className="text-xs font-mono font-bold text-red-600 mt-1">
+                          {formatBDT(product.priceBDT)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           )}

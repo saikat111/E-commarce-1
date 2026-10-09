@@ -180,3 +180,38 @@ export interface ProductFilterState {
   choiceOnly: boolean;
   freeShippingOnly: boolean;
 }
+
+export interface BrowsingHistoryItem {
+  productId: string;
+  category: ProductCategory;
+  subcategory: string;
+  priceBDT: number;
+  timestamp: number;
+  viewCount: number;
+}
+
+export type RecommendationSignal =
+  | 'category_affinity'
+  | 'subcategory_match'
+  | 'price_proximity'
+  | 'similar_item'
+  | 'wishlist_synergy'
+  | 'trending_popular';
+
+export interface RecommendationReason {
+  signal: RecommendationSignal;
+  title: string;
+  badgeLabel: string;
+  description: string;
+  scoreBonus: number;
+}
+
+export interface ScoredRecommendation {
+  product: Product;
+  score: number;
+  matchPercentage: number;
+  reasons: RecommendationReason[];
+  primaryReason: string;
+  badgeText: string;
+  basedOnProduct?: Product;
+}

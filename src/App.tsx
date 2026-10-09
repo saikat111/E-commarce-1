@@ -18,6 +18,7 @@ import { WishlistPage } from './components/pages/WishlistPage';
 import { UserDashboard } from './components/dashboard/UserDashboard';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { api } from './services/api';
+import { recordProductView } from './services/browsingHistory';
 import { Product, ProductCategory, PageRoute, ProductVariantColor, ProductVariantSpec } from './types';
 import { PRODUCTS_CATALOG } from './data/products';
 
@@ -74,7 +75,10 @@ function MarketplaceRouter() {
 
     if (productId) {
       const found = PRODUCTS_CATALOG.find((p) => p.id === productId);
-      if (found) setSelectedProduct(found);
+      if (found) {
+        setSelectedProduct(found);
+        recordProductView(found);
+      }
     }
 
     setCurrentPage(page);
@@ -94,6 +98,7 @@ function MarketplaceRouter() {
 
   const handleSelectProduct = (product: Product) => {
     setSelectedProduct(product);
+    recordProductView(product);
     navigateTo('product', product.category, product.id);
   };
 

@@ -8,6 +8,7 @@ import { Product, ProductVariantColor, ProductVariantSpec, PageRoute, ProductCat
 import { formatBDT } from '../../utils/formatters';
 import { useCart } from '../../context/CartContext';
 import { CATEGORIES_METADATA } from '../../data/products';
+import { recordProductView } from '../../services/browsingHistory';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -51,13 +52,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const [newTitle, setNewTitle] = useState('');
   const [newComment, setNewComment] = useState('');
 
-  // Sync reviews and active image when product changes
+  // Sync reviews, active image, and record view in browsing history when product changes
   useEffect(() => {
     setActiveImageIndex(0);
     setReviewsList(product.reviews || []);
     setSelectedColor(product.colors[0]);
     setSelectedSpec(product.specsVariants?.[0]);
     setQuantity(1);
+    recordProductView(product);
   }, [product]);
 
   const wishlisted = isWishlisted(product.id);

@@ -7,6 +7,7 @@ import { Product, ProductCategory, PageRoute } from '../../types';
 import { CATEGORIES_METADATA } from '../../data/products';
 import { formatBDT } from '../../utils/formatters';
 import { useCart } from '../../context/CartContext';
+import { RecommendedForYou } from '../home/RecommendedForYou';
 
 interface HomePageProps {
   products: Product[];
@@ -537,7 +538,15 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
 
-      {/* 5. Featured Products & Nexus Choice Showcase */}
+      {/* 5. Personalized "Recommended for You" Feed (Heuristic Engine based on Browsing History & Recent Items) */}
+      <RecommendedForYou
+        products={products}
+        onNavigate={onNavigate}
+        onSelectProduct={onSelectProduct}
+        onBuyNow={onBuyNow}
+      />
+
+      {/* 6. Featured Products & Nexus Choice Showcase */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-6">
           
