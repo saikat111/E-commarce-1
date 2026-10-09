@@ -101,9 +101,26 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           <div className="space-y-3">
             <h5 className="font-bold uppercase tracking-wider text-white text-[11px]">
-              Customer Service
+              Customer Service & Account
             </h5>
             <ul className="space-y-2 text-neutral-400">
+              <li>
+                <button
+                  onClick={() => onNavigate('dashboard')}
+                  className="hover:text-white transition-colors cursor-pointer text-left text-red-400 font-bold flex items-center gap-1"
+                >
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Track My Shipment Live</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('dashboard')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
+                >
+                  User Account & Dashboard
+                </button>
+              </li>
               <li>
                 <span className="hover:text-white cursor-pointer">Buyer Protection Policy</span>
               </li>

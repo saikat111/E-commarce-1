@@ -422,12 +422,20 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               </div>
             </div>
 
-            <div className="pt-4 flex justify-center gap-4">
+            <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3">
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className="px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+              >
+                <Truck className="w-4 h-4" />
+                <span>Track Order Live in Dashboard</span>
+              </button>
+
               <button
                 onClick={() => onNavigate('home')}
                 className="px-8 py-3.5 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer shadow-md"
               >
-                Return to Storefront
+                Continue Shopping
               </button>
             </div>
           </div>

@@ -1,149 +1,143 @@
-# Nexus Bazaar — Ultra-Modern Multi-Page Marketplace (BDT)
+# 🛍️ Nexus Bazaar — Ultra-Modern Multi-Page E-Commerce Marketplace (BDT)
 
-> **AliExpress-Inspired UI Architecture · Pure BDT (৳) Pricing · Multi-Page Navigation**  
-> Built with React 19, TypeScript, and Tailwind CSS. Features full multi-page client routing, category browsing with faceted sidebar filters, dedicated full-page Product Details (PDP) with Related Products, selectable Cart items, and an express checkout flow tailored for Bangladesh (bKash, Nagad, Cash on Delivery).
+> **AliExpress-Inspired Architecture · Pure Bangladeshi Taka (৳) Pricing · Real-Time Order Tracking Timeline · Interactive User Account Dashboard · Rich Multi-Category Catalog**
 
----
-
-## 🌟 Key Features & Marketplace UX
-
-### 1. Multi-Page Architecture (No Single-Page Monolith)
-- **Home Page (`home`):**
-  - AliExpress-style Hero Grid with left category taxonomy sidebar, central promotional banner slider, and right Welcome Card with **৳500 OFF** first order coupon (`ALIBD500`) + Daily Coins claim.
-  - **SuperDeals Flash Sale:** Live countdown timer (Hours:Minutes:Seconds), discount callouts (-35% to -45%), progress bars with sold counts, and instant Buy Now buttons.
-  - **Choice Day Curated Picks:** Multi-category tabbed browsing with verified buyer ratings.
-  - **Trust & Assurance Strip:** Free nationwide shipping threshold (৳2,500), 15-day free returns, and Cash on Delivery guarantee.
-- **Category Page (`category`):**
-  - Dedicated multi-page view with breadcrumbs (`Home > Department > Subcategory`).
-  - Left facet sidebar:
-    - Subcategory filtering.
-    - Price range filter in **BDT (৳)** with minimum and maximum inputs and an "Apply" button.
-    - Services & programs: AliExpress Choice Only, Free Shipping Only, In Stock Only.
-  - Main catalog grid with sorting (*Best Match, Orders (popular), Price: Low to High, Price: High to Low, Rating*), item count, discount tags, and Add to Cart / Buy Now buttons.
-- **Product Details Page (`product`):**
-  - Dedicated full page (not a modal!) with browser history navigation.
-  - High-resolution multi-photo gallery with thumbnail switcher.
-  - Price block in BDT (`formatBDT`): Flash price, original price, discount percentage, and BDT savings.
-  - Colorway swatches and specifications variant pickers.
-  - Quantity selector with live stock availability warnings.
-  - **Dual Conversion Actions:** Working **"Add to Cart"** and instant **"Buy Now"** (routes directly to express checkout).
-  - AliExpress-style **Seller / Store Card** (Store Name, 98.8% positive feedback, chat with seller).
-  - **Tabbed Dossier:** Technical specifications table, detailed product highlights, and verified customer reviews.
-  - **Related Products Section:** "Customers Also Bought / More to Love" showcase featuring 4+ related pieces from the same category.
-- **Dedicated Cart Page (`cart`):**
-  - Select-all and individual item selection checkboxes.
-  - Quantity steppers and line item deletion.
-  - Free shipping progress bar (Free nationwide courier inside Bangladesh at **৳2,500**).
-  - Coupon discount input with instant verification (`ALIBD500`, `CHOICE10`).
-  - Itemized calculation in BDT with "Proceed to Checkout".
-- **Dedicated Checkout Page (`checkout`):**
-  - Bangladeshi shipping address form: Receiver Name, Contact Phone (+880), Division selection (Dhaka, Chittagong, Sylhet, Khulna, etc.), City, Area, Street Address.
-  - Payment methods tailored for Bangladesh:
-    - **Cash on Delivery (COD)** — Zero pre-payment required.
-    - **bKash Mobile Wallet** — Instant mobile checkout.
-    - **Nagad Payment**
-    - **Credit / Debit Card** (Visa, Mastercard, Amex).
-  - Order confirmation receipt with reference number (`BD-2026-XXXXXX`) and courier tracking code (`SA-BD-XXXXX`).
-- **Wishlist Page (`wishlist`):**
-  - Dedicated page for bookmarked items with one-click "Move to Cart" and "Buy Now".
+Nexus Bazaar is a production-grade, ultra-modern e-commerce web application crafted with **React 19**, **TypeScript**, and **Tailwind CSS**. It replicates the high-converting, detail-oriented shopping experience of global platforms like AliExpress, customized specifically for Bangladesh's ecosystem (bKash, Nagad, Cash on Delivery, Steadfast & RedX courier logistics).
 
 ---
 
-## 💰 100% BDT (Bangladeshi Taka) Pricing & Rich Catalog
+## 🌟 Key Application Highlights
 
-Every single price, calculation, and discount is rendered in BDT with the `৳` symbol.
+### 1. 🚚 Dedicated Order Tracking & Shipping Timeline
+- **5-Milestone Canonical Timeline (`OrderTrackingTimeline.tsx`):**
+  1. **Order Confirmed & Verified** (bKash/Nagad/COD payment verified)
+  2. **Processing & Barcode Packed** (central sorting facility quality check)
+  3. **Dispatched with Courier Partner** (Steadfast Courier / RedX Express priority manifest)
+  4. **Out for Delivery** (rider assigned with name and phone number)
+  5. **Delivered to Customer Doorstep** (OTP verification and signature)
+- **Live Location Checkpoints:**
+  - Audit trail with timestamps, facility hubs (e.g., *Tejgaon Industrial Area, Dhaka North Regional Hub, Gulshan-2*), and operational notes.
+  - Interactive **One-Click Tracking Number Copy** (`SA-BD-XXXXXX`, `RX-BD-XXXXXX`) with toast feedback.
+  - Active parcel status indicator with animated pulsing badges.
+  - Direct courier helpline link and transit damage insurance guarantee card.
 
-The catalog contains **30+ products** across 6 core departments, with a **minimum of 5 products per category**:
+### 2. 👤 Ultra-Modern User Account Dashboard (`UserDashboard.tsx`)
+- **Pro User Summary Strip:**
+  - Profile avatar with Diamond Choice / Platinum membership tier status.
+  - Key performance metrics: *Total Orders Placed*, *Active In-Transit Shipments*, and *Nexus Bazaar Coins* (redeemable for checkout discounts).
+- **Tabbed Architecture:**
+  - **Dashboard Overview:** Real-time metrics breakdown, highlighted active shipment card with quick jump to live tracker, and recent order history preview.
+  - **Track Shipments:** Split view with live search by order/tracking number, status filters (*All, In Transit, Delivered*), and package contents breakdown.
+  - **Order History:** Complete log of previous orders with date stamps, payment methods, line items, and tracking shortcuts.
+  - **Saved Wishlist:** One-click Add to Cart, product detail redirection, and item deletion.
+  - **Delivery Addresses:** Multiple address cards (Home, Office) with default selection toggle for 1-click checkout.
+  - **Account Settings:** Editable customer profile, Bangladesh phone number, and security preferences.
 
-1. **Consumer Electronics & Audio (5 products):**
-   - Aether Pro Hybrid ANC Wireless Headphones (৳6,450)
-   - Strata Monolith Aluminum Wireless Desktop Speaker (৳14,990)
-   - Pulse X Pro Low-Latency Wireless Gaming Earbuds (৳2,850)
-   - Lumia 75 Hot-Swappable Wireless Mechanical Keyboard (৳5,200)
-   - Clarity 4K UHD Streaming Webcam with Ring Light (৳4,150)
-2. **Smart Home & Architectural Lighting (5 products):**
-   - Lumina Fluted Brass & Travertine Table Lamp (৳3,850)
-   - Sunset Halo 16-Color RGB Projection Lamp (৳1,650)
-   - Ultra-Thin Magnetic Wireless PIR Sensor LED Strip (Pack of 2) (৳1,250)
-   - Nordic Minimalist Arc Floor Lamp with Marble Plinth (৳9,800)
-   - Levitating Magnetic 3D Moon Night Lamp (৳4,500)
-3. **Timepieces & Horology (5 products):**
-   - Atelier Chronos Grade 5 Titanium Automatic Watch (৳18,500)
-   - Nordic Slim Line Minimalist Steel Mesh Watch (৳3,450)
-   - Apex Tactical Military AMOLED Smartwatch (৳4,890)
-   - Aviator Heritage Mechanical Pilot Chronograph (৳12,800)
-   - Full-Grain Vegetable-Tanned Italian Leather Strap (৳1,450)
-4. **Furniture & Interior Living (5 products):**
-   - Form Architectural Lounge Chair in Solid White Oak (৳24,500)
-   - Nordic Walnut Wall-Mounted Floating Nightstand (৳3,200)
-   - Monolith Travertine & Oak Round Coffee Table (৳14,500)
-   - ErgoPro 3D Lumbar Breathable Mesh Office Chair (৳16,800)
-   - Nordic Sculptural Bouclé Fabric Armchair (৳28,000)
-5. **Kitchen, Dining & Coffee Craft (5 products):**
-   - Precision Gooseneck Variable Temp Electric Pour-Over Kettle (৳5,950)
-   - Kanso Hand-Thrown Stoneware Carafe with 2 Cups Set (৳2,650)
-   - Shogun 67-Layer Damascus Steel 8-Inch Chef Knife (৳4,400)
-   - Apex Precision Stainless Steel Conical Burr Coffee Grinder (৳6,800)
-   - Nordic Double-Wall Insulated Borosilicate Glass French Press (৳2,150)
-6. **Everyday Carry & Lifestyle Decor (5 products):**
-   - Vesper Monolithic Spanish Nero Marble Incense Altar (৳2,450)
-   - Tempo Minimalist Architectural Column Desk Clock (৳3,900)
-   - Nordic Washed Waffle 100% Belgian Flax Linen Blanket (৳3,600)
-   - MagFlow 3-in-1 Foldable Aluminum Fast Wireless Charging Stand (৳3,850)
-   - Aero Titanium Bolt-Action EDC Multi-Tool Pen (৳1,850)
+### 3. 🎯 Advanced Multi-Page Storefront Navigation
+- **True Multi-Page Routing (No Single-Page Monolith):**
+  - Dynamic browser history push state with URL hash syncing (`#home`, `#category/electronics_audio`, `#product/elec_01`, `#cart`, `#checkout`, `#wishlist`, `#dashboard`).
+  - Native browser back and forward button support.
+  - Header breadcrumb trail (`HeaderBreadcrumb.tsx`) with category quick-switcher dropdown and BDT pricing context.
+- **Top AliExpress-Style Utility & Navigation Bar (`AliNavbar.tsx`):**
+  - Currency & shipping notice: 🇧🇩 *Ship to: Bangladesh / BDT (৳)*.
+  - Global department selector integrated directly into the search bar.
+  - Visual image search button and trending Bangladesh search tags.
+  - Account action button with live indicator connecting directly to the user dashboard.
 
----
+### 4. 🏷️ Category Explorer with Interactive BDT Price Range Slider
+- **Dual-Handle / Dynamic Price Range Filter (`CategoryPage.tsx`):**
+  - Range slider in Bangladeshi Taka ranging from **৳0 to ৳50,000+** with ৳500 step precision.
+  - Instant Min & Max number inputs for exact value entry.
+  - One-click price preset chips: *All Prices*, *Under ৳3,000*, *৳3,000 – ৳10,000*, *Above ৳10,000*.
+  - Deal filter toggles: **Flash Deals**, **Featured Items**, **Best Sellers**, and **Super Discounts**.
+  - Service filters: *AliExpress Choice Only*, *Free Shipping Nationwide*, and *In Stock Only*.
 
-## 🛠️ Project Structure
+### 5. 📸 Dedicated Product Detail Page (PDP) & Customer Reviews
+- **Multi-Photo Image Gallery:**
+  - 4 distinct, high-resolution photographs per product with thumbnail selector.
+  - Zoom-in preview modal / lightbox for fine detail inspection.
+- **Bangladeshi Buyer Reviews System:**
+  - 5-star distribution breakdown, buyer satisfaction percentage, and verified badges.
+  - Real customer reviews from verified buyers across Dhaka, Chittagong, Sylhet, and Khulna.
+  - Interactive "Helpful" counters and "Write a Customer Review" modal submission form.
+- **Conversion Actions:**
+  - Working **Add to Cart** with quantity controls and color/spec variant pickers.
+  - Instant **Buy Now** button which populates cart and immediately routes to express checkout.
+  - Related items carousel ("More to Love / Customers Also Bought").
 
-```
-├── index.html                   # Entry point with Google Fonts and BDT metadata
-├── metadata.json                # Project capabilities configuration
-├── package.json                 # Dependencies & scripts
-├── README.md                    # Architecture and documentation
-├── src/
-│   ├── App.tsx                  # Multi-page router orchestrator
-│   ├── main.tsx                 # React 19 entry point
-│   ├── index.css                # Tailwind CSS v4 setup
-│   ├── types/
-│   │   └── index.ts             # Domain models, BDT types & routes
-│   ├── utils/
-│   │   └── formatters.ts        # BDT (৳) currency & number formatters
-│   ├── data/
-│   │   └── products.ts          # 30+ product catalog with BDT pricing
-│   ├── services/
-│   │   └── api.ts               # Repository layer for products, orders & promos
-│   ├── context/
-│   │   └── CartContext.tsx      # Shopping cart with BDT math & persistence
-│   └── components/
-│       ├── layout/
-│       │   ├── AliNavbar.tsx    # AliExpress-style search bar & category nav
-│       │   └── Footer.tsx       # Bangladesh delivery hubs & payment partners
-│       ├── pages/
-│       │   ├── HomePage.tsx     # Hero grid, SuperDeals countdown & Choice tabs
-│       │   ├── CategoryPage.tsx # Facet sidebar, BDT price filters & sorting
-│       │   ├── ProductDetailPage.tsx # Dedicated PDP with Related Products
-│       │   ├── CartPage.tsx     # Full cart with select-all & BDT checkout
-│       │   ├── CheckoutPage.tsx # Bangladesh address & bKash/COD payments
-│       │   └── WishlistPage.tsx # Bookmarked items collection
-│       └── cart/
-│           └── CartDrawer.tsx   # Slide-over cart preview
-```
+### 6. 💳 Bangladesh-Tailored Express Checkout & Payments
+- **Nationwide Logistics & Address Form:**
+  - Division selector (Dhaka, Chittagong, Rajshahi, Khulna, Barisal, Sylhet, Rangpur, Mymensingh).
+  - City, Area, Street address, and contact number (+880).
+- **Payment Methods:**
+  - **Cash on Delivery (COD)** — Zero advance payment required.
+  - **bKash Mobile Wallet** — Instant mobile checkout simulation.
+  - **Nagad Payment**
+  - **Visa / Mastercard / Amex**
+- **Promotional Coupons:**
+  - `ALIBD500` (৳500 OFF first order).
+  - `CHOICE10` (10% extra discount).
 
 ---
 
-## 🚀 Running Locally
+## 📦 Rich Product Catalog (30+ Products, 6 Categories)
+
+Every category contains at least 5 high-end products with multiple photos, detailed technical specifications, seller ratings, and verified buyer reviews:
+
+1. **Consumer Electronics & Audio** (Headphones, Desktop Monitors, Keyboards, Microphones, Soundbars)
+2. **Smart Home & Architectural Lighting** (Fluted Brass Table Lamps, RGB Halo Projection, Levitating Moon Lamps)
+3. **Timepieces & Horology** (Grade 5 Titanium Automatic Watches, AMOLED Tacticals, Pilot Chronographs)
+4. **Furniture & Interior Living** (Architectural White Oak Chairs, Travertine Coffee Tables, Bouclé Armchairs)
+5. **Kitchen, Dining & Coffee Craft** (Gooseneck Electric Kettles, Damascus Chef Knives, Conical Burr Grinders)
+6. **Everyday Carry & Lifestyle Gadgets** (Spanish Nero Marble Altars, Desk Clocks, Belgian Flax Linen)
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ or 20+
+- npm or pnpm
+
+### Installation & Run
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Run dev server
+# Start local development server (port 3000)
 npm run dev
 
-# 3. Build for production
-npm run build
-
-# 4. Type check and lint
+# Run TypeScript linter
 npm run lint
+
+# Build for production
+npm run build
 ```
+
+---
+
+## 📁 Architecture Overview
+
+```
+├── src/
+│   ├── components/
+│   │   ├── cart/              # CartDrawer, slide-over bag
+│   │   ├── dashboard/         # UserDashboard, OrderTrackingTimeline, OrderTrackingSection
+│   │   ├── layout/            # AliNavbar, HeaderBreadcrumb, Footer
+│   │   ├── pages/             # HomePage, CategoryPage, ProductDetailPage, CartPage, CheckoutPage, WishlistPage
+│   │   └── product/           # ProductCard, ReviewSection, ImageGallery
+│   ├── context/               # CartContext (cart state, wishlist, coupons)
+│   ├── data/                  # products.ts (30+ catalog items with BDT pricing and multiple images)
+│   ├── services/              # api.ts (simulated backend for products, orders, promos, and tracking)
+│   ├── types/                 # index.ts (TypeScript data models, PageRoute, Order, Checkpoint)
+│   └── utils/                 # formatters.ts (formatBDT, date helpers)
+├── App.tsx                    # Multi-page application router & history coordinator
+├── index.html                 # HTML5 entry with BDT meta branding
+└── README.md                  # Complete technical and design documentation
+```
+
+---
+
+## 🛡️ License
+MIT License. Created for the Google AI Studio ultra-modern e-commerce showcase.

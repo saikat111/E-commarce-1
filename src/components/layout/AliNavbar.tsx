@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Search, ShoppingCart, Heart, User, ChevronDown, Flame, 
-  Sparkles, ShieldCheck, HelpCircle, Package, ArrowRight, Menu, X, Camera
+  Sparkles, ShieldCheck, HelpCircle, Package, ArrowRight, Menu, X, Camera, Truck
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { ProductCategory, PageRoute } from '../../types';
@@ -65,7 +65,12 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
           {/* Right: Help, Buyer Protection & Account */}
           <div className="flex items-center gap-4 text-neutral-400">
             <span className="hover:text-white cursor-pointer hidden md:inline">Buyer Protection</span>
-            <span className="hover:text-white cursor-pointer hidden md:inline">Track Order</span>
+            <button 
+              onClick={() => onNavigate('dashboard')}
+              className="hover:text-white transition-colors cursor-pointer hidden md:inline text-xs"
+            >
+              Track Order
+            </button>
             <span className="hover:text-white cursor-pointer flex items-center gap-1">
               <HelpCircle className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Help</span>
@@ -164,6 +169,29 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
 
           {/* User Utility Actions (Wishlist, Cart, Account) */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            {/* Account Dashboard Button */}
+            <button
+              onClick={() => onNavigate('dashboard')}
+              className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-2 rounded-xl transition-colors cursor-pointer group ${
+                currentPage === 'dashboard'
+                  ? 'bg-neutral-900 text-white'
+                  : 'text-neutral-700 hover:text-red-600 hover:bg-neutral-100'
+              }`}
+              title="My Account & Order Tracking"
+            >
+              <div className="relative">
+                <User className="w-5 h-5 group-hover:text-red-600 transition-colors" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white" />
+              </div>
+              <div className="hidden lg:flex flex-col text-left">
+                <span className="text-[10px] text-neutral-400 font-medium leading-tight">Welcome</span>
+                <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                  <span>Dashboard</span>
+                  <ChevronDown className="w-3 h-3 text-neutral-400 group-hover:text-red-600" />
+                </span>
+              </div>
+            </button>
+
             {/* Wishlist */}
             <button
               onClick={() => onNavigate('wishlist')}
@@ -347,7 +375,27 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
               {cat.name}
             </button>
           ))}
-          <div className="pt-2 border-t border-neutral-100">
+          <div className="pt-2 border-t border-neutral-100 space-y-1">
+            <button
+              onClick={() => {
+                onNavigate('dashboard');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-xs font-bold text-neutral-900 hover:text-red-600 flex items-center justify-between"
+            >
+              <span>User Dashboard & Track Orders</span>
+              <Truck className="w-4 h-4 text-red-600" />
+            </button>
+            <button
+              onClick={() => {
+                onNavigate('wishlist');
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-xs font-bold text-neutral-900 hover:text-red-600 flex items-center justify-between"
+            >
+              <span>Saved Wishlist ({wishlist.length})</span>
+              <Heart className="w-4 h-4 text-pink-500" />
+            </button>
             <button
               onClick={() => {
                 onNavigate('cart');

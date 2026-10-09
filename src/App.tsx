@@ -15,6 +15,7 @@ import { ProductDetailPage } from './components/pages/ProductDetailPage';
 import { CartPage } from './components/pages/CartPage';
 import { CheckoutPage } from './components/pages/CheckoutPage';
 import { WishlistPage } from './components/pages/WishlistPage';
+import { UserDashboard } from './components/dashboard/UserDashboard';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { api } from './services/api';
 import { Product, ProductCategory, PageRoute, ProductVariantColor, ProductVariantSpec } from './types';
@@ -200,6 +201,14 @@ function MarketplaceRouter() {
             onNavigate={navigateTo}
             onSelectProduct={handleSelectProduct}
             onBuyNow={handleBuyNow}
+          />
+        )}
+
+        {/* Page 7: Dedicated User Account Dashboard & Order Tracking */}
+        {currentPage === 'dashboard' && (
+          <UserDashboard
+            onNavigate={navigateTo}
+            onSelectProduct={handleSelectProduct}
           />
         )}
 

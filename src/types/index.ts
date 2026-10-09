@@ -9,7 +9,8 @@ export type PageRoute =
   | 'product'
   | 'cart'
   | 'checkout'
-  | 'wishlist';
+  | 'wishlist'
+  | 'dashboard';
 
 export type ProductCategory = 
   | 'all'
@@ -19,6 +20,17 @@ export type ProductCategory =
   | 'furniture_living'
   | 'kitchen_tableware'
   | 'lifestyle_gadgets';
+
+export interface TrackingCheckpoint {
+  id: string;
+  step: 'ordered' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered';
+  title: string;
+  location: string;
+  timestamp: string;
+  completed: boolean;
+  active?: boolean;
+  note?: string;
+}
 
 export interface CategoryMeta {
   id: ProductCategory;
@@ -152,6 +164,9 @@ export interface Order {
   status: 'confirmed' | 'processing' | 'shipped' | 'delivered';
   trackingNumber: string;
   estimatedDeliveryDate: string;
+  courier?: string;
+  currentStep?: 'ordered' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered';
+  timeline?: TrackingCheckpoint[];
 }
 
 export interface ProductFilterState {
