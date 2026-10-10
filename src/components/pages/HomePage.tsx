@@ -87,10 +87,121 @@ export const HomePage: React.FC<HomePageProps> = ({
   }).slice(0, 8);
 
   return (
-    <div className="space-y-10 pb-16">
+    <div className="space-y-6 sm:space-y-10 pb-28 md:pb-16">
       
+      {/* Mobile App Category Stories / Quick Action Carousel (Phone App UI) */}
+      <section className="lg:hidden max-w-7xl mx-auto px-4 pt-3">
+        <div className="flex items-center gap-3.5 overflow-x-auto pb-2 scrollbar-none snap-x">
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'all')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🔥
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">SuperDeals</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'electronics_audio')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🎧
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Audio Tech</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'smart_lighting')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                💡
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Lighting</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'fashion_watches')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                ⌚
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Watches</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'furniture_living')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🛋️
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Living</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('category', 'kitchen_tableware')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🍳
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Kitchen</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('dashboard')}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-600 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🚚
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">Track Order</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('nexus_open_support_chat', {}));
+            }}
+            className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer snap-start active:scale-95 transition-transform"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-neutral-900 to-red-600 p-0.5 shadow-md flex items-center justify-center">
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-xl">
+                🤖
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-neutral-800 tracking-tight">AI Concierge</span>
+          </button>
+        </div>
+      </section>
+
       {/* 1. AliExpress-Style Mega Hero Section (Categories Sidebar + Main Banner + User Perks Card) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 sm:pt-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           
           {/* Left: Department Categories Vertical Sidebar */}

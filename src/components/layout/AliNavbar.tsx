@@ -236,23 +236,54 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Search Input */}
-        <div className="md:hidden mt-2">
-          <form onSubmit={handleSearchSubmit} className="flex">
-            <input
-              type="text"
-              placeholder="Search products in BDT..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="flex-1 h-10 px-3 text-xs bg-neutral-100 border border-neutral-300 rounded-l-lg outline-hidden"
-            />
+        {/* Mobile App Search Bar with Trending Pills */}
+        <div className="md:hidden mt-2 space-y-1.5">
+          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+            <div className="relative flex-1 flex items-center">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-3 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Search 10,000+ items in BDT (৳)..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-full h-10 pl-9 pr-8 text-xs bg-neutral-100 rounded-l-full outline-hidden border border-neutral-300 border-r-0 focus:bg-white focus:border-red-600 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => onSearchChange('')}
+                  className="absolute right-2.5 p-1 text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
             <button
               type="submit"
-              className="h-10 px-4 bg-red-600 text-white text-xs font-bold rounded-r-lg"
+              className="h-10 px-4 bg-red-600 active:bg-red-700 text-white text-xs font-bold rounded-r-full flex items-center justify-center cursor-pointer shadow-xs"
             >
               <Search className="w-4 h-4" />
             </button>
           </form>
+
+          {/* Quick Trending Horizontal Scroll on Mobile */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-[11px]">
+            <span className="text-neutral-400 font-medium shrink-0">Hot:</span>
+            {trendingTags.map((tag) => (
+              <button
+                key={tag.label}
+                type="button"
+                onClick={() => {
+                  onSearchChange(tag.label);
+                  onNavigate('category', tag.category);
+                }}
+                className="px-2 py-0.5 bg-neutral-100 hover:bg-red-50 text-neutral-700 hover:text-red-600 rounded-full text-[10px] font-medium whitespace-nowrap cursor-pointer transition-colors"
+              >
+                {tag.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -362,63 +393,152 @@ export const AliNavbar: React.FC<AliNavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile App Slide-Over Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-neutral-200 px-4 py-3 space-y-2">
-          <button
-            onClick={() => {
-              onNavigate('home');
-              setMobileMenuOpen(false);
-            }}
-            className="block w-full text-left py-2 text-sm font-bold text-neutral-900 border-b border-neutral-100"
-          >
-            Storefront Home
-          </button>
-          <div className="text-[11px] font-bold text-neutral-400 uppercase pt-2">
-            Categories
-          </div>
-          {CATEGORIES_METADATA.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                onNavigate('category', cat.id);
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-1.5 text-xs font-medium text-neutral-700 hover:text-red-600"
-            >
-              {cat.name}
-            </button>
-          ))}
-          <div className="pt-2 border-t border-neutral-100 space-y-1">
-            <button
-              onClick={() => {
-                onNavigate('dashboard');
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 text-xs font-bold text-neutral-900 hover:text-red-600 flex items-center justify-between"
-            >
-              <span>User Dashboard & Track Orders</span>
-              <Truck className="w-4 h-4 text-red-600" />
-            </button>
-            <button
-              onClick={() => {
-                onNavigate('wishlist');
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 text-xs font-bold text-neutral-900 hover:text-red-600 flex items-center justify-between"
-            >
-              <span>Saved Wishlist ({wishlist.length})</span>
-              <Heart className="w-4 h-4 text-pink-500" />
-            </button>
-            <button
-              onClick={() => {
-                onNavigate('cart');
-                setMobileMenuOpen(false);
-              }}
-              className="block w-full text-left py-2 text-sm font-bold text-red-600"
-            >
-              View Shopping Cart ({itemCount} items)
-            </button>
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-neutral-950/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Sidebar */}
+          <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
+            {/* Top User & Brand Bar */}
+            <div className="bg-neutral-950 text-white p-4 flex items-center justify-between border-b border-neutral-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center font-bold text-white text-sm">
+                  NB
+                </div>
+                <div>
+                  <h3 className="text-sm font-black tracking-tight leading-tight">
+                    NEXUS<span className="text-red-500">BAZAAR</span>
+                  </h3>
+                  <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                    <span>🇧🇩 Ship to Bangladesh (৳)</span>
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 text-neutral-400 hover:text-white rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Navigation Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Quick Shortcuts */}
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('home');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-900 hover:bg-neutral-100 transition-colors cursor-pointer"
+                >
+                  <span>Storefront Home</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('dashboard');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-900 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-red-600" />
+                    <span>Track Shipments & Orders</span>
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('wishlist');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-neutral-900 hover:bg-pink-50 hover:text-pink-600 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-pink-500" />
+                    <span>Saved Wishlist ({wishlist.length})</span>
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-neutral-400" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('cart');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    <span>My Cart ({itemCount})</span>
+                  </span>
+                  <span className="font-mono font-bold text-xs">
+                    {formatBDT(cart.totalBDT)}
+                  </span>
+                </button>
+              </div>
+
+              {/* Department Categories */}
+              <div className="pt-2 border-t border-neutral-100 space-y-1">
+                <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-3 py-1">
+                  Browse Departments
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('category', 'all');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-neutral-800 hover:bg-neutral-100 flex items-center justify-between cursor-pointer"
+                >
+                  <span>All Categories</span>
+                  <Flame className="w-3.5 h-3.5 text-red-600" />
+                </button>
+
+                {CATEGORIES_METADATA.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      onNavigate('category', cat.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between cursor-pointer transition-colors ${
+                      activeCategory === cat.id ? 'bg-red-50 text-red-600 font-bold' : 'text-neutral-700 hover:bg-neutral-100'
+                    }`}
+                  >
+                    <span>{cat.name}</span>
+                    <ArrowRight className="w-3 h-3 text-neutral-400" />
+                  </button>
+                ))}
+              </div>
+
+              {/* Bangladesh Trust Notice */}
+              <div className="pt-3 border-t border-neutral-100 bg-neutral-50 rounded-xl p-3 text-[11px] text-neutral-600 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-emerald-700">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>100% Bangladesh Buyer Protection</span>
+                </div>
+                <p className="text-[10px] text-neutral-500">
+                  Steadfast Courier Delivery · bKash, Nagad & Cash on Delivery Available
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}

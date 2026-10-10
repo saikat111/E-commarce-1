@@ -53,7 +53,26 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
 - **Intelligent Cold-Start Fallback:**
   - Seamlessly welcomes first-time visitors with high-conversion Choice and best-selling curations across diverse categories.
 
-### 4. 🎯 Advanced Multi-Page Storefront Navigation
+### 4. ⚡ Real-Time 'Recent Activity' Social Proof & Urgency Toast (`RecentActivityToast.tsx`)
+- **Non-Intrusive Ambient Urgency Bubbles:**
+  - Elegantly positioned in the bottom-left corner with sleek glassmorphism and subtle elevation (`shadow-xl bg-white/95 backdrop-blur-md border border-neutral-200/90`).
+  - Staggered display intervals (displays for 6 seconds, pauses for 12 seconds) without disrupting customer browsing.
+- **Authentic Bangladesh Customer Context (`activityService.ts`):**
+  - Live verified order stream featuring realistic buyer names (*Tanvir H., Nusrat J., Shafiqul R., Farhana K.*) across key divisions (*Dhanmondi, Gulshan-2, Panchlaish Chittagong, Zindabazar Sylhet, KDA Khulna, Shaheb Bazar Rajshahi*).
+  - Accurate payment methods (*bKash, Nagad, Cash on Delivery, Visa/Mastercard*).
+  - High-resolution product thumbnail, item title, variant label, and live price in BDT (৳).
+- **Dynamic Scarcity & Social Proof Indicators:**
+  - Pulsing emerald live purchase dot with relative time stamps (*"Purchased Just now"*, *"Purchased 2m ago"*).
+  - Stock scarcity notice (*"⚡ Only 3 units left in stock"*, *"14 viewing now"*).
+- **Thoughtful Interactive Controls:**
+  - **Pause on Hover:** Auto-dismiss timer pauses automatically when the customer hovers their mouse over the card to read product specs.
+  - **Animated Progress Bar:** Micro-indicator along the bottom showing remaining display duration.
+  - **Direct Product Redirection:** Clicking anywhere on the card instantly navigates to that product's dedicated PDP.
+  - **User Privacy & Comfort Controls:** 1-click dismiss button (`X`) and a toggleable "Mute" control (`BellOff`) that respects user preference via `localStorage`.
+- **Live Purchases Feed Explorer:**
+  - Floating ambient pill button (*"⚡ Live Purchases · 18 today"*) opening a full verified order audit modal so users can inspect real-time transaction activity nationwide.
+
+### 5. 🎯 Advanced Multi-Page Storefront Navigation
 - **True Multi-Page Routing (No Single-Page Monolith):**
   - Dynamic browser history push state with URL hash syncing (`#home`, `#category/electronics_audio`, `#product/elec_01`, `#cart`, `#checkout`, `#wishlist`, `#dashboard`).
   - Native browser back and forward button support.
@@ -64,7 +83,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Visual image search button and trending Bangladesh search tags.
   - Account action button with live indicator connecting directly to the user dashboard.
 
-### 5. 🏷️ Category Explorer with Interactive BDT Price Range Slider
+### 6. 🏷️ Category Explorer with Interactive BDT Price Range Slider
 - **Dual-Handle / Dynamic Price Range Filter (`CategoryPage.tsx`):**
   - Range slider in Bangladeshi Taka ranging from **৳0 to ৳50,000+** with ৳500 step precision.
   - Instant Min & Max number inputs for exact value entry.
@@ -72,7 +91,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Deal filter toggles: **Flash Deals**, **Featured Items**, **Best Sellers**, and **Super Discounts**.
   - Service filters: *AliExpress Choice Only*, *Free Shipping Nationwide*, and *In Stock Only*.
 
-### 6. 📸 Dedicated Product Detail Page (PDP) & Customer Reviews
+### 7. 📸 Dedicated Product Detail Page (PDP) & Customer Reviews
 - **Multi-Photo Image Gallery:**
   - 4 distinct, high-resolution photographs per product with thumbnail selector.
   - Zoom-in preview modal / lightbox for fine detail inspection.
@@ -85,7 +104,7 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
   - Instant **Buy Now** button which populates cart and immediately routes to express checkout.
   - Related items carousel ("More to Love / Customers Also Bought").
 
-### 7. 💳 Bangladesh-Tailored Express Checkout & Payments
+### 8. 💳 Bangladesh-Tailored Express Checkout & Payments
 - **Nationwide Logistics & Address Form:**
   - Division selector (Dhaka, Chittagong, Rajshahi, Khulna, Barisal, Sylhet, Rangpur, Mymensingh).
   - City, Area, Street address, and contact number (+880).
@@ -97,6 +116,63 @@ Nexus Bazaar is a production-grade, ultra-modern e-commerce web application craf
 - **Promotional Coupons:**
   - `ALIBD500` (৳500 OFF first order).
   - `CHOICE10` (10% extra discount).
+
+### 9. 💬 Persistent 'Chat with Us' FAB & Mock AI Support Concierge (`SupportChatModal.tsx`, `mockChatService.ts`)
+- **Persistent Floating Action Button (FAB):**
+  - Positioned at `bottom-right` with pulsing emerald online beacon, unread badge counter, and smooth micro-hover physics.
+  - Works across every page of the application without obstructing cart trays or checkout flows.
+- **Intelligent Context-Aware Support Assistant:**
+  - **Courier & Order Tracking Lookups:** Recognizes tracking codes (`SA-BD-XXXXXX`, `RX-BD-XXXXXX`) and order IDs (`NX-BD-89211`), rendering interactive timeline cards directly in the conversation with one-click jump to the tracking dashboard.
+  - **Interactive Catalog Recommendations:** Understands product requests (*"recommend headphones under ৳5,000"*, *"watches"*, *"lighting"*) and embeds real clickable product cards with instant *View Product* and *Add to Bag* actions.
+  - **Bangladesh Payment Guidance:** Explains bKash merchant QR checkout, Nagad, Cash on Delivery nationwide, and 0% card EMI.
+  - **Coupon Delivery:** Serves verified promo vouchers (`ALIBD500`, `CHOICE10`) with a 1-click clipboard copy tool.
+  - **Realistic Typing Simulation:** Animated bouncing typing indicator before delivering responses.
+  - **Quick Action Prompt Chips:** Clickable chips for instant answers without typing (*Track active parcel*, *Payment methods*, *Delivery times*).
+
+### 10. 🔔 Intelligent Price Drop Alerts & Urgency Notification Hub (`PriceDropAlertModal.tsx`, `PriceDropBannerToast.tsx`)
+- **Product-Level Price Drop Alerts:**
+  - Dedicated *"Set Price Drop Alert"* button on every Product Detail Page with active indicator badge.
+  - Configurable target discount presets (-5%, -10%, -15%, -20%) and custom BDT slider controls.
+  - Multi-channel delivery preference: SMS (+880 Bangladesh format), Email, or In-App Browser alerts.
+- **Active Alerts Management Center (`UserDashboard.tsx`):**
+  - Dedicated *Price Drop Alerts* tab in the user account dashboard displaying all monitored items, current vs. target price in BDT, and one-click removal.
+  - **"⚡ Test Drop" Simulation Button:** Allows instant testing of price drop triggers, firing a celebratory urgency banner (`PriceDropBannerToast.tsx`) with savings calculation and direct *Buy Now* routing.
+
+### 11. ⚖️ Multi-Product Side-by-Side Comparison Matrix (`ProductComparisonModal.tsx`, `CompareFloatingBar.tsx`)
+- **Global Comparison State (`CompareContext.tsx`):**
+  - Add up to 4 items from across the catalog with persistent `localStorage` synchronization.
+  - One-click *Compare* button on Category cards and PDP action bars.
+- **Floating Bottom Comparison Tray (`CompareFloatingBar.tsx`):**
+  - Ambient tray appearing automatically whenever products are selected for comparison.
+  - Shows item thumbnails, empty slots indicator, minimize/maximize control, and instant *"Compare Now"* launch button.
+- **Comprehensive Side-by-Side Matrix (`ProductComparisonModal.tsx`):**
+  - **🏆 Best Value Pick Algorithmic Tagging:** Evaluates price-to-rating ratio, discount percentage, and review volume to automatically highlight the top value product.
+  - **Highlight Differences Toggle:** Filters or highlights rows where specifications vary between compared products.
+  - Complete matrix covering prices in BDT, discounts, ratings, review counts, stock levels, delivery speed, official warranty, origin, and technical hardware specifications.
+  - Direct *Add to Bag* and *Buy Now* buttons right inside the matrix.
+
+---
+
+## 📱 Mobile-Friendly App-Like UI & Phone Responsiveness
+
+The marketplace features a responsive mobile app experience modeled after native shopping apps (AliExpress, Shopee, Amazon):
+
+- **Persistent Bottom App Navigation Bar (`MobileBottomNav.tsx`):**
+  - Sticky 5-tab bar at the bottom on mobile screens (Home, Categories, Compare, Cart, Account).
+  - Dynamic notification badge counters for shopping cart items and compared products.
+  - Active tab indicators and safe-area padding.
+- **Top Category Quick Stories Carousel:**
+  - Horizontal swipeable circular story chips on the mobile storefront (SuperDeals, Audio, Lighting, Watches, Living, Kitchen, Track Order, AI Concierge).
+- **Mobile Sticky Action Bar on PDP:**
+  - Fixed mobile bottom toolbar on Product Detail Pages with quick 1-tap *Chat with Concierge*, *Wishlist*, *Add to Bag*, and *Buy Now* with live BDT pricing.
+- **App-Style Mobile Filter Bottom Drawer:**
+  - Replaces long desktop sidebars with a quick *Filters & Price (৳)* button opening a slide-up bottom sheet with the interactive BDT slider, presets, subcategories, and services filters.
+- **Mobile 2-Column Catalog Grids:**
+  - Compact, high-density 2-column product cards across Category, Home, and Wishlist pages.
+- **Mobile Cart Sticky Checkout Bar:**
+  - Fixed mobile summary bar on the cart page displaying total BDT and direct checkout trigger.
+- **Floating Controls Collision Prevention:**
+  - AI Support Chat FAB, Compare tray, and Recent Activity social proof bubbles automatically lift above the mobile bottom tab bar (`bottom-20`).
 
 ---
 
@@ -143,14 +219,18 @@ npm run build
 ├── src/
 │   ├── components/
 │   │   ├── cart/              # CartDrawer, slide-over bag
+│   │   ├── chat/              # SupportChatModal (persistent FAB & mock AI support concierge)
+│   │   ├── compare/           # CompareFloatingBar, ProductComparisonModal (specs matrix)
 │   │   ├── dashboard/         # UserDashboard, OrderTrackingTimeline, OrderTrackingSection
-│   │   ├── layout/            # AliNavbar, HeaderBreadcrumb, Footer
+│   │   ├── home/              # RecommendedForYou (heuristic recommendation feed & persona simulators)
+│   │   ├── layout/            # AliNavbar, MobileBottomNav, HeaderBreadcrumb, Footer
+│   │   ├── notifications/     # RecentActivityToast (real-time purchase urgency bubbles & live feed)
 │   │   ├── pages/             # HomePage, CategoryPage, ProductDetailPage, CartPage, CheckoutPage, WishlistPage
-│   │   └── product/           # ProductCard, ReviewSection, ImageGallery
-│   ├── context/               # CartContext (cart state, wishlist, coupons)
+│   │   └── product/           # PriceDropAlertModal, PriceDropBannerToast, ProductCard, ReviewSection
+│   ├── context/               # CartContext, CompareContext (multi-product comparison state)
 │   ├── data/                  # products.ts (30+ catalog items with BDT pricing and multiple images)
-│   ├── services/              # api.ts (simulated backend for products, orders, promos, and tracking)
-│   ├── types/                 # index.ts (TypeScript data models, PageRoute, Order, Checkpoint)
+│   ├── services/              # api.ts, mockChatService.ts, priceAlertService.ts, recommendationEngine.ts, activityService.ts
+│   ├── types/                 # index.ts (TypeScript data models, PageRoute, Order, ChatMessage, PriceDropAlert)
 │   └── utils/                 # formatters.ts (formatBDT, date helpers)
 ├── App.tsx                    # Multi-page application router & history coordinator
 ├── index.html                 # HTML5 entry with BDT meta branding

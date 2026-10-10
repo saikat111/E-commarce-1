@@ -20,7 +20,7 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
   const savedProducts = PRODUCTS_CATALOG.filter((p) => wishlist.includes(p.id));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 md:pb-8 space-y-6">
       
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-neutral-500 font-medium">
@@ -61,14 +61,14 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
           {savedProducts.map((product) => (
             <div
               key={product.id}
               onClick={() => onSelectProduct(product)}
-              className="group bg-white rounded-2xl border border-neutral-200 hover:border-neutral-400 hover:shadow-lg transition-all p-3 flex flex-col justify-between cursor-pointer"
+              className="group bg-white rounded-2xl border border-neutral-200 hover:border-neutral-400 hover:shadow-lg transition-all p-2.5 sm:p-3 flex flex-col justify-between cursor-pointer"
             >
-              <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-neutral-100 mb-3">
+              <div className="relative aspect-square sm:aspect-4/3 rounded-xl overflow-hidden bg-neutral-100 mb-2 sm:mb-3">
                 <img
                   src={product.imageUrl}
                   alt={product.name}
@@ -76,13 +76,15 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                 />
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleWishlist(product.id);
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer shadow-xs"
+                  title="Remove from Wishlist"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -91,24 +93,26 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
                   {product.name}
                 </h4>
                 <div className="flex items-baseline gap-1.5 font-mono tabular-nums pt-1">
-                  <span className="text-base font-black text-red-600">{formatBDT(product.priceBDT)}</span>
-                  <span className="text-xs text-neutral-400 line-through">{formatBDT(product.originalPriceBDT)}</span>
+                  <span className="text-sm sm:text-base font-black text-red-600">{formatBDT(product.priceBDT)}</span>
+                  <span className="text-[10px] sm:text-xs text-neutral-400 line-through">{formatBDT(product.originalPriceBDT)}</span>
                 </div>
               </div>
 
-              <div className="pt-3 grid grid-cols-2 gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="pt-2.5 grid grid-cols-2 gap-1.5" onClick={(e) => e.stopPropagation()}>
                 <button
+                  type="button"
                   onClick={() => addItem(product)}
-                  className="py-2 px-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  className="py-1.5 sm:py-2 px-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Add to Cart</span>
+                  <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+                  <span>Add</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => onBuyNow(product)}
-                  className="py-2 px-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                  className="py-1.5 sm:py-2 px-1 bg-red-600 hover:bg-red-700 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-xs"
                 >
-                  <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                  <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
                   <span>Buy Now</span>
                 </button>
               </div>

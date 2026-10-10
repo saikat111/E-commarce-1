@@ -215,3 +215,57 @@ export interface ScoredRecommendation {
   badgeText: string;
   basedOnProduct?: Product;
 }
+
+export interface PurchaseActivityEvent {
+  id: string;
+  customerName: string;
+  location: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  priceBDT: number;
+  timeAgo: string;
+  timestamp: number;
+  paymentMethod: 'bKash' | 'Nagad' | 'COD' | 'Card';
+  variantLabel?: string;
+  stockRemaining?: number;
+  viewersCount?: number;
+}
+
+export interface PriceDropAlert {
+  id: string;
+  productId: string;
+  productName: string;
+  productImage: string;
+  category: ProductCategory;
+  originalPriceBDT: number;
+  currentPriceBDT: number;
+  targetPriceBDT: number;
+  contactMethod: 'sms' | 'email' | 'in_app';
+  contactValue: string;
+  createdAt: number;
+  status: 'active' | 'triggered';
+  triggeredPriceBDT?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  text: string;
+  timestamp: number;
+  suggestedActions?: string[];
+  recommendedProducts?: Product[];
+  orderInfo?: {
+    orderNumber: string;
+    trackingNumber: string;
+    status: string;
+    step: string;
+    courier: string;
+    estimatedDelivery: string;
+    itemsCount: number;
+    totalBDT: number;
+  };
+  couponCode?: string;
+}
+
+

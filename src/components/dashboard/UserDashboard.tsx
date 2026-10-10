@@ -3,22 +3,24 @@ import {
   User, Package, Truck, Heart, MapPin, CreditCard, 
   Settings, Bell, LogOut, ShieldCheck, ChevronRight, 
   ShoppingBag, Sparkles, Clock, CheckCircle2, AlertCircle,
-  Phone, Mail, Edit3, Plus, ArrowUpRight, Award, Trash2
+  Phone, Mail, Edit3, Plus, ArrowUpRight, Award, Trash2,
+  BellRing, Zap
 } from 'lucide-react';
-import { Order, PageRoute, Product } from '../../types';
+import { Order, PageRoute, Product, PriceDropAlert } from '../../types';
 import { api } from '../../services/api';
 import { PRODUCTS_CATALOG } from '../../data/products';
 import { useCart } from '../../context/CartContext';
 import { OrderTrackingSection } from './OrderTrackingSection';
 import { formatBDT } from '../../utils/formatters';
 import { getRecentlyViewedProducts } from '../../services/browsingHistory';
+import { getPriceAlerts, removePriceAlert, simulatePriceDrop } from '../../services/priceAlertService';
 
 interface UserDashboardProps {
   onNavigate: (page: PageRoute) => void;
   onSelectProduct: (product: Product) => void;
 }
 
-type DashboardTab = 'overview' | 'tracking' | 'orders' | 'wishlist' | 'addresses' | 'settings';
+type DashboardTab = 'overview' | 'tracking' | 'orders' | 'wishlist' | 'alerts' | 'addresses' | 'settings';
 
 interface UserProfile {
   name: string;
@@ -38,6 +40,11 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [priceAlerts, setPriceAlerts] = useState<PriceDropAlert[]>(() => getPriceAlerts());
+
+  const handleRefreshAlerts = () => {
+    setPriceAlerts(getPriceAlerts());
+  };
 
   // Map wishlist ID strings to full product objects
   const wishlistedProducts = wishlist
@@ -107,10 +114,10 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   const totalSpentBDT = orders.reduce((sum, o) => sum + o.totalBDT, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 font-sans">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 md:pb-16 space-y-6 sm:space-y-8 font-sans">
       
       {/* Top Profile Summary Header Card */}
-      <div className="bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-neutral-800 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 text-white rounded-3xl p-5 sm:p-8 shadow-xl border border-neutral-800 relative overflow-hidden">
         {/* Glow decoration */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl -z-0 pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-amber-500/10 rounded-full blur-2xl -z-0 pointer-events-none" />
@@ -122,7 +129,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
               <img
                 src={profile.avatar}
                 alt={profile.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-red-500/80 shadow-lg"
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-red-500/80 shadow-lg"
               />
               <span className="absolute -bottom-1 -right-1 bg-amber-400 text-neutral-950 text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow-xs">
                 PRO
@@ -150,27 +157,115 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
 
           {/* Quick Metrics Badges */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 shrink-0">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center min-w-[90px]">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 text-center min-w-[80px]">
               <span className="text-[10px] uppercase font-bold text-neutral-400 block">Total Orders</span>
-              <span className="text-lg font-mono font-black text-white">{totalOrders}</span>
+              <span className="text-base sm:text-lg font-mono font-black text-white">{totalOrders}</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center min-w-[90px]">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 text-center min-w-[80px]">
               <span className="text-[10px] uppercase font-bold text-neutral-400 block">In Transit</span>
-              <span className="text-lg font-mono font-black text-red-400">{inTransitOrders.length}</span>
+              <span className="text-base sm:text-lg font-mono font-black text-red-400">{inTransitOrders.length}</span>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center min-w-[90px]">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 text-center min-w-[80px]">
               <span className="text-[10px] uppercase font-bold text-neutral-400 block">Bazaar Coins</span>
-              <span className="text-lg font-mono font-black text-amber-400">{profile.coins}</span>
+              <span className="text-base sm:text-lg font-mono font-black text-amber-400">{profile.coins}</span>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Mobile Horizontal App Tabs Nav */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x -mx-4 px-4">
+        <button
+          type="button"
+          onClick={() => setActiveTab('overview')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'overview'
+              ? 'bg-neutral-900 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <Package className="w-3.5 h-3.5 text-red-500" />
+          <span>Overview</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('tracking')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'tracking'
+              ? 'bg-red-600 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <Truck className="w-3.5 h-3.5" />
+          <span>Track Shipments</span>
+          {inTransitOrders.length > 0 && (
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black font-mono ${
+              activeTab === 'tracking' ? 'bg-white text-red-600' : 'bg-red-100 text-red-700'
+            }`}>
+              {inTransitOrders.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('orders')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'orders'
+              ? 'bg-neutral-900 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <ShoppingBag className="w-3.5 h-3.5" />
+          <span>Orders ({orders.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('alerts')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'alerts'
+              ? 'bg-neutral-900 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <BellRing className="w-3.5 h-3.5 text-amber-500" />
+          <span>Price Alerts ({priceAlerts.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('wishlist')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'wishlist'
+              ? 'bg-neutral-900 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <Heart className="w-3.5 h-3.5 text-pink-500" />
+          <span>Wishlist ({wishlist.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('addresses')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer transition-colors ${
+            activeTab === 'addresses'
+              ? 'bg-neutral-900 text-white shadow-xs'
+              : 'bg-white text-neutral-700 border border-neutral-200'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>Addresses</span>
+        </button>
+      </div>
+
       {/* Main Dashboard Layout: Sidebar Navigation + Content Body */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Navigation Sidebar (3 columns) */}
-        <aside className="lg:col-span-3 space-y-4">
+        {/* Navigation Sidebar (Desktop 3 columns) */}
+        <aside className="hidden lg:block lg:col-span-3 space-y-4">
           <nav className="bg-white rounded-2xl border border-neutral-200/80 p-2 shadow-2xs space-y-1">
             <button
               onClick={() => setActiveTab('overview')}
@@ -230,6 +325,21 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
               <span className="flex-1 text-left">Saved Wishlist</span>
               <span className="text-[10px] font-mono text-neutral-400 font-bold">
                 {wishlist.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                activeTab === 'alerts'
+                  ? 'bg-neutral-900 text-white shadow-xs'
+                  : 'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-950'
+              }`}
+            >
+              <BellRing className="w-4 h-4 text-amber-500" />
+              <span className="flex-1 text-left">Price Drop Alerts</span>
+              <span className="text-[10px] font-mono text-neutral-400 font-bold">
+                {priceAlerts.length}
               </span>
             </button>
 
@@ -643,6 +753,132 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB: PRICE DROP ALERTS */}
+          {activeTab === 'alerts' && (
+            <div className="space-y-4">
+              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+                    <span>Price Drop Alerts Center</span>
+                    <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full font-mono">
+                      {priceAlerts.length} Active
+                    </span>
+                  </h2>
+                  <p className="text-xs text-neutral-500">
+                    Receive instant alerts whenever your monitored items drop below your target threshold.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('home')}
+                  className="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shrink-0"
+                >
+                  Browse Catalog
+                </button>
+              </div>
+
+              {priceAlerts.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-neutral-200/80 p-12 text-center space-y-3">
+                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                    <BellRing className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-sm font-bold text-neutral-800">No active price drop alerts</h3>
+                  <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                    Visit any product detail page and click "Set Price Drop Alert" to start monitoring price cuts.
+                  </p>
+                  <button
+                    onClick={() => onNavigate('home')}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Explore Products
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {priceAlerts.map((alert) => {
+                    const prod = PRODUCTS_CATALOG.find((p) => p.id === alert.productId);
+                    return (
+                      <div
+                        key={alert.id}
+                        className="bg-white rounded-2xl border border-neutral-200/80 p-4 shadow-2xs space-y-3 flex flex-col justify-between"
+                      >
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={alert.productImage}
+                            alt={alert.productName}
+                            className="w-16 h-16 rounded-xl object-cover border border-neutral-200 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] uppercase font-bold text-neutral-400">
+                              {alert.category.replace('_', ' ')}
+                            </span>
+                            <h4 
+                              onClick={() => prod && onSelectProduct(prod)}
+                              className="text-xs font-bold text-neutral-900 hover:text-red-600 transition-colors cursor-pointer truncate"
+                            >
+                              {alert.productName}
+                            </h4>
+                            <div className="mt-1 flex items-baseline gap-2">
+                              <span className="text-xs text-neutral-500">Target:</span>
+                              <span className="text-sm font-mono font-bold text-red-600">
+                                {formatBDT(alert.targetPriceBDT)}
+                              </span>
+                              <span className="text-xs font-mono text-neutral-400 line-through">
+                                {formatBDT(alert.currentPriceBDT)}
+                              </span>
+                            </div>
+                            <div className="mt-1 text-[10px] text-neutral-500">
+                              Notify: <span className="font-mono">{alert.contactValue}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-neutral-100 text-xs">
+                          {/* Test Simulate Price Drop Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              simulatePriceDrop(alert.productId, 20);
+                              handleRefreshAlerts();
+                            }}
+                            className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                            title="Simulate an instant price drop event"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                            <span>Test Drop</span>
+                          </button>
+
+                          <div className="flex items-center gap-1.5">
+                            {prod && (
+                              <button
+                                type="button"
+                                onClick={() => onSelectProduct(prod)}
+                                className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                              >
+                                View Item
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                removePriceAlert(alert.id);
+                                handleRefreshAlerts();
+                              }}
+                              className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              title="Delete alert"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { 
   SlidersHorizontal, ChevronRight, Star, ShoppingBag, Zap, 
-  RotateCcw, Sparkles, Truck, Check, Heart, ArrowUpDown 
+  RotateCcw, Sparkles, Truck, Check, Heart, ArrowUpDown, Scale, X, Filter 
 } from 'lucide-react';
 import { Product, ProductCategory, PageRoute, ProductFilterState } from '../../types';
 import { CATEGORIES_METADATA } from '../../data/products';
 import { formatBDT } from '../../utils/formatters';
 import { useCart } from '../../context/CartContext';
+import { useCompare } from '../../context/CompareContext';
 
 interface CategoryPageProps {
   products: Product[];
@@ -32,6 +33,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   onCategoryChange,
 }) => {
   const { addItem, toggleWishlist, isWishlisted } = useCart();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
   // Local filter states
   const [internalSubcategory, setInternalSubcategory] = useState<string>('all');
@@ -52,6 +54,16 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   const [choiceOnly, setChoiceOnly] = useState(false);
   const [freeShippingOnly, setFreeShippingOnly] = useState(false);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const activeFiltersCount = 
+    (appliedMinPrice > 0 ? 1 : 0) +
+    (appliedMaxPrice < 40000 ? 1 : 0) +
+    (selectedSubcategory !== 'all' ? 1 : 0) +
+    (dealFilter !== 'all' ? 1 : 0) +
+    (choiceOnly ? 1 : 0) +
+    (freeShippingOnly ? 1 : 0) +
+    (inStockOnly ? 1 : 0);
 
   const activeCategoryMeta = CATEGORIES_METADATA.find((c) => c.id === activeCategory);
 
@@ -198,8 +210,8 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
       {/* Main Two-Column Layout (Sidebar Filters + Results Grid) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left: Facet Sidebar */}
-        <aside className="lg:col-span-3 bg-white rounded-2xl border border-neutral-200 p-5 space-y-6 shadow-2xs">
+        {/* Left: Facet Sidebar (Desktop Only) */}
+        <aside className="hidden lg:block lg:col-span-3 bg-white rounded-2xl border border-neutral-200 p-5 space-y-6 shadow-2xs">
           
           <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-900">
@@ -506,6 +518,68 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
         {/* Right: Products Catalog Grid */}
         <div className="lg:col-span-9 space-y-4">
           
+          {/* Mobile App Filter & Sort Bar (Phone Responsive) */}
+          <div className="lg:hidden bg-white rounded-2xl border border-neutral-200 p-2.5 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen(true)}
+                className="flex-1 py-2 px-3 bg-neutral-900 active:bg-neutral-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-red-500" />
+                <span>Filters & Price (৳)</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-5 h-5 bg-red-600 text-white rounded-full text-[10px] font-black flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="h-9 px-3 pr-7 bg-neutral-100 text-xs font-bold text-neutral-800 rounded-xl outline-hidden border border-neutral-200 cursor-pointer appearance-none"
+                >
+                  <option value="featured">Best Match</option>
+                  <option value="orders-desc">Orders</option>
+                  <option value="price-asc">৳ Low-High</option>
+                  <option value="price-desc">৳ High-Low</option>
+                </select>
+                <ArrowUpDown className="w-3 h-3 text-neutral-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Subcategories Horizontal Scroll on Mobile */}
+            {activeCategoryMeta && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-neutral-100 text-xs">
+                <button
+                  onClick={() => setSelectedSubcategory('all')}
+                  className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    selectedSubcategory === 'all'
+                      ? 'bg-neutral-900 text-white'
+                      : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                  }`}
+                >
+                  All {activeCategoryMeta.shortName}
+                </button>
+                {activeCategoryMeta.subcategories.map((sub) => (
+                  <button
+                    key={sub}
+                    onClick={() => setSelectedSubcategory(sub)}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                      selectedSubcategory === sub
+                        ? 'bg-red-600 text-white'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                    }`}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Top Deals Filter Pills Bar */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
             <button
@@ -606,17 +680,17 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
 
           {/* Catalog Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
               {filteredProducts.map((product) => {
                 const wishlisted = isWishlisted(product.id);
                 return (
                   <div
                     key={product.id}
                     onClick={() => onSelectProduct(product)}
-                    className="group bg-white rounded-2xl border border-neutral-200 hover:border-neutral-400 hover:shadow-lg transition-all duration-300 p-3 flex flex-col justify-between cursor-pointer"
+                    className="group bg-white rounded-2xl border border-neutral-200 hover:border-neutral-400 hover:shadow-lg transition-all duration-300 p-2 sm:p-3 flex flex-col justify-between cursor-pointer"
                   >
                     {/* Image Box */}
-                    <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-neutral-100 mb-3">
+                    <div className="relative aspect-square sm:aspect-4/3 rounded-xl overflow-hidden bg-neutral-100 mb-2 sm:mb-3">
                       <img
                         src={product.imageUrl}
                         alt={product.name}
@@ -654,18 +728,42 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
                         )}
                       </div>
 
-                      {/* Wishlist Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleWishlist(product.id);
-                        }}
-                        className={`absolute top-2 right-2 p-1.5 rounded-full transition-colors cursor-pointer ${
-                          wishlisted ? 'bg-red-50 text-red-600' : 'bg-white/80 text-neutral-600 hover:bg-white'
-                        }`}
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${wishlisted ? 'fill-current' : ''}`} />
-                      </button>
+                      {/* Actions Cluster: Compare & Wishlist */}
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isInCompare(product.id)) {
+                              removeFromCompare(product.id);
+                            } else {
+                              addToCompare(product);
+                            }
+                          }}
+                          title={isInCompare(product.id) ? 'Remove from comparison' : 'Add to compare'}
+                          className={`p-1.5 rounded-full transition-all cursor-pointer ${
+                            isInCompare(product.id)
+                              ? 'bg-red-600 text-white shadow-xs'
+                              : 'bg-white/80 text-neutral-600 hover:bg-white hover:text-neutral-900'
+                          }`}
+                        >
+                          <Scale className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist(product.id);
+                          }}
+                          title={wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                          className={`p-1.5 rounded-full transition-colors cursor-pointer ${
+                            wishlisted ? 'bg-red-50 text-red-600' : 'bg-white/80 text-neutral-600 hover:bg-white'
+                          }`}
+                        >
+                          <Heart className={`w-3.5 h-3.5 ${wishlisted ? 'fill-current' : ''}`} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Metadata */}
@@ -703,19 +801,19 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
                       </div>
 
                       {/* Dual Action Buttons: Add to Bag & Buy Now */}
-                      <div className="pt-2 grid grid-cols-2 gap-2" onClick={(e) => e.stopPropagation()}>
+                      <div className="pt-2 grid grid-cols-2 gap-1.5 sm:gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => addItem(product)}
-                          className="py-2 px-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                          className="py-1.5 sm:py-2 px-1 sm:px-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-[10px] sm:text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
                           <span>Add</span>
                         </button>
                         <button
                           onClick={() => onBuyNow(product)}
-                          className="py-2 px-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-xs"
+                          className="py-1.5 sm:py-2 px-1 sm:px-2 bg-red-600 hover:bg-red-700 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-xs"
                         >
-                          <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                          <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
                           <span>Buy Now</span>
                         </button>
                       </div>
@@ -733,7 +831,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
               </p>
               <button
                 onClick={handleResetFilters}
-                className="px-5 py-2.5 bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg"
+                className="px-5 py-2.5 bg-neutral-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg cursor-pointer"
               >
                 Clear All Filters
               </button>
@@ -743,6 +841,216 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
         </div>
 
       </div>
+
+      {/* Mobile App Filter Drawer (Bottom Sheet) */}
+      {mobileFilterOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-neutral-950/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileFilterOpen(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="relative bg-white rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl border-t border-neutral-200 z-10 animate-in slide-in-from-bottom duration-200">
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-red-600" />
+                <h3 className="font-bold text-sm text-neutral-900">Filters & Preferences</h3>
+                {activeFiltersCount > 0 && (
+                  <span className="text-[10px] bg-red-600 text-white font-black px-1.5 py-0.2 rounded-full">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs font-semibold text-neutral-500 hover:text-red-600 cursor-pointer"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileFilterOpen(false)}
+                  className="p-1 rounded-full text-neutral-400 hover:text-neutral-900 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Filters Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* BDT Price Range Slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                    Price Range in BDT (৳)
+                  </span>
+                  <span className="text-xs font-mono font-bold text-red-600">
+                    ৳{appliedMinPrice.toLocaleString()} – ৳{appliedMaxPrice.toLocaleString()}
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="40000"
+                  step="500"
+                  value={sliderMaxPrice}
+                  onChange={(e) => handleSliderChange(Number(e.target.value))}
+                  className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+                />
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-neutral-50 p-2 rounded-xl border border-neutral-200">
+                    <span className="text-[10px] text-neutral-400 block font-medium">Min Price (৳)</span>
+                    <input
+                      type="number"
+                      value={minPriceInput}
+                      onChange={(e) => setMinPriceInput(e.target.value)}
+                      onBlur={() => handleApplyCustomPrice()}
+                      className="w-full font-mono font-bold bg-transparent outline-hidden"
+                    />
+                  </div>
+                  <div className="bg-neutral-50 p-2 rounded-xl border border-neutral-200">
+                    <span className="text-[10px] text-neutral-400 block font-medium">Max Price (৳)</span>
+                    <input
+                      type="number"
+                      value={maxPriceInput}
+                      onChange={(e) => setMaxPriceInput(e.target.value)}
+                      onBlur={() => handleApplyCustomPrice()}
+                      className="w-full font-mono font-bold bg-transparent outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                {/* Price Presets */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPricePreset(0, 2000)}
+                    className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 rounded-lg hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                  >
+                    Under ৳2,000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPricePreset(2000, 10000)}
+                    className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 rounded-lg hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                  >
+                    ৳2,000 – ৳10,000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPricePreset(10000, 25000)}
+                    className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 rounded-lg hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                  >
+                    ৳10,000 – ৳25,000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPricePreset(25000, 40000)}
+                    className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-100 rounded-lg hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                  >
+                    ৳25,000+
+                  </button>
+                </div>
+              </div>
+
+              {/* Department Selector */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                  Department
+                </span>
+                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onCategoryChange('all');
+                      setSelectedSubcategory('all');
+                    }}
+                    className={`p-2 rounded-xl text-left font-semibold border transition-all cursor-pointer ${
+                      activeCategory === 'all'
+                        ? 'bg-neutral-900 text-white border-neutral-900'
+                        : 'bg-neutral-50 text-neutral-700 border-neutral-200'
+                    }`}
+                  >
+                    All Departments
+                  </button>
+                  {CATEGORIES_METADATA.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        onCategoryChange(cat.id);
+                        setSelectedSubcategory('all');
+                      }}
+                      className={`p-2 rounded-xl text-left font-semibold border transition-all cursor-pointer ${
+                        activeCategory === cat.id
+                          ? 'bg-red-600 text-white border-red-600'
+                          : 'bg-neutral-50 text-neutral-700 border-neutral-200'
+                      }`}
+                    >
+                      {cat.shortName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Services & Delivery Checks */}
+              <div className="space-y-2 pt-2 border-t border-neutral-100 text-xs">
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+                  Buyer Benefits & Services
+                </span>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={choiceOnly}
+                      onChange={(e) => setChoiceOnly(e.target.checked)}
+                      className="rounded text-red-600"
+                    />
+                    <span className="font-bold text-neutral-800">Choice Certified Only</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={freeShippingOnly}
+                      onChange={(e) => setFreeShippingOnly(e.target.checked)}
+                      className="rounded text-red-600"
+                    />
+                    <span className="text-neutral-700">Free Courier Shipping Across Bangladesh</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                      className="rounded text-red-600"
+                    />
+                    <span className="text-neutral-700">In Stock Ready for Instant Dispatch</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Sticky Apply Bar */}
+            <div className="p-4 bg-white border-t border-neutral-200">
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen(false)}
+                className="w-full py-3 bg-red-600 active:bg-red-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md cursor-pointer"
+              >
+                Show {filteredProducts.length} Results
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

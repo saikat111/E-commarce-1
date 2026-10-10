@@ -9,6 +9,7 @@ import { CartProvider, useCart } from './context/CartContext';
 import { AliNavbar } from './components/layout/AliNavbar';
 import { HeaderBreadcrumb } from './components/layout/HeaderBreadcrumb';
 import { Footer } from './components/layout/Footer';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { HomePage } from './components/pages/HomePage';
 import { CategoryPage } from './components/pages/CategoryPage';
 import { ProductDetailPage } from './components/pages/ProductDetailPage';
@@ -17,6 +18,12 @@ import { CheckoutPage } from './components/pages/CheckoutPage';
 import { WishlistPage } from './components/pages/WishlistPage';
 import { UserDashboard } from './components/dashboard/UserDashboard';
 import { CartDrawer } from './components/cart/CartDrawer';
+import { RecentActivityToast } from './components/notifications/RecentActivityToast';
+import { CompareProvider } from './context/CompareContext';
+import { CompareFloatingBar } from './components/compare/CompareFloatingBar';
+import { ProductComparisonModal } from './components/compare/ProductComparisonModal';
+import { SupportChatModal } from './components/chat/SupportChatModal';
+import { PriceDropBannerToast } from './components/product/PriceDropBannerToast';
 import { api } from './services/api';
 import { recordProductView } from './services/browsingHistory';
 import { Product, ProductCategory, PageRoute, ProductVariantColor, ProductVariantSpec } from './types';
@@ -143,8 +150,8 @@ function MarketplaceRouter() {
         onSelectSubcategory={(sub) => setSelectedSubcategory(sub)}
       />
 
-      {/* Main Multi-Page Route Render Stage */}
-      <main className="flex-1">
+      {/* Main Multi-Page Route Render Stage (with padding bottom on mobile for app bottom nav bar) */}
+      <main className="flex-1 pb-16 md:pb-0">
         
         {/* Page 1: Home Page */}
         {currentPage === 'home' && (
@@ -225,8 +232,41 @@ function MarketplaceRouter() {
         onViewCartPage={() => navigateTo('cart')}
       />
 
+      {/* Real-Time 'Recent Activity' Social Proof Toast Notifications */}
+      <RecentActivityToast
+        onSelectProduct={handleSelectProduct}
+      />
+
+      {/* Product Comparison Floating Tray */}
+      <CompareFloatingBar />
+
+      {/* Product Comparison Full Specs Matrix Modal */}
+      <ProductComparisonModal
+        onSelectProduct={handleSelectProduct}
+        onBuyNow={(prod) => handleBuyNow(prod, prod.colors[0])}
+        onNavigate={navigateTo}
+      />
+
+      {/* Price Drop Alert Celebration Banner Toast */}
+      <PriceDropBannerToast
+        onSelectProduct={handleSelectProduct}
+        onBuyNow={(prod) => handleBuyNow(prod, prod.colors[0])}
+      />
+
+      {/* Persistent 'Chat with Us' FAB & Mock AI Support Chat */}
+      <SupportChatModal
+        onNavigate={navigateTo}
+        onSelectProduct={handleSelectProduct}
+      />
+
       {/* Footer with Payment Methods, Bangladesh Hubs, and Policies */}
       <Footer onNavigate={navigateTo} />
+
+      {/* Persistent Native Mobile App Bottom Tab Bar */}
+      <MobileBottomNav
+        currentPage={currentPage}
+        onNavigate={navigateTo}
+      />
 
     </div>
   );
@@ -235,7 +275,9 @@ function MarketplaceRouter() {
 export default function App() {
   return (
     <CartProvider>
-      <MarketplaceRouter />
+      <CompareProvider>
+        <MarketplaceRouter />
+      </CompareProvider>
     </CartProvider>
   );
 }

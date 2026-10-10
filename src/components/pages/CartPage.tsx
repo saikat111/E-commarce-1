@@ -50,7 +50,7 @@ export const CartPage: React.FC<CartPageProps> = ({
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32 md:pb-8 space-y-6">
       
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-neutral-500 font-medium">
@@ -305,6 +305,33 @@ export const CartPage: React.FC<CartPageProps> = ({
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* Mobile-Only Sticky App Checkout Bar */}
+      {cart.items.length > 0 && (
+        <div 
+          aria-label="Mobile Sticky Cart Checkout"
+          className="md:hidden fixed bottom-14 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 px-4 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+        >
+          <div>
+            <span className="text-[10px] text-neutral-500 font-medium block">
+              Total ({selectedCount} items)
+            </span>
+            <span className="text-base font-black font-mono text-red-600 tabular-nums">
+              {formatBDT(cart.totalBDT)}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onProceedToCheckout}
+            disabled={selectedCount === 0}
+            className="py-2.5 px-5 bg-red-600 active:bg-red-700 disabled:opacity-40 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Checkout</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 

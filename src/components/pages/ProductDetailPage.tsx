@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { 
   Star, Truck, ShieldCheck, RotateCcw, Heart, Check, Plus, Minus, 
   ChevronRight, ChevronLeft, Zap, ShoppingBag, Store, MessageCircle, Share2, Award, Clock,
-  ThumbsUp, Edit3, X, Maximize2
+  ThumbsUp, Edit3, X, Maximize2, Bell, Scale, BellRing
 } from 'lucide-react';
 import { Product, ProductVariantColor, ProductVariantSpec, PageRoute, ProductCategory, ProductReview } from '../../types';
 import { formatBDT } from '../../utils/formatters';
 import { useCart } from '../../context/CartContext';
+import { useCompare } from '../../context/CompareContext';
 import { CATEGORIES_METADATA } from '../../data/products';
 import { recordProductView } from '../../services/browsingHistory';
+import { PriceDropAlertModal } from '../product/PriceDropAlertModal';
+import { hasPriceAlertForProduct } from '../../services/priceAlertService';
 
 interface ProductDetailPageProps {
   product: Product;
@@ -26,6 +29,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onBuyNow,
 }) => {
   const { addItem, toggleWishlist, isWishlisted } = useCart();
+  const { addToCompare, removeFromCompare, isInCompare, openCompareModal } = useCompare();
+
+  // Price Drop Alert State
+  const [showPriceAlertModal, setShowPriceAlertModal] = useState(false);
+  const [priceAlertSuccessToast, setPriceAlertSuccessToast] = useState(false);
+  const [compareToast, setCompareToast] = useState<string | null>(null);
 
   // Multi-Image Gallery State
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
@@ -126,7 +135,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-36 md:pb-12 space-y-10">
       
       {/* Main PDP Grid (Gallery Left + Contiguous Buy Module Center/Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start bg-white rounded-3xl border border-neutral-200 p-6 sm:p-8 shadow-xs">
@@ -392,6 +401,75 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </button>
           </div>
 
+          {/* Price Drop Alert & Product Comparison Actions */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center gap-2.5">
+              {/* Price Drop Alert Button */}
+              <button
+                type="button"
+                onClick={() => setShowPriceAlertModal(true)}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                  hasPriceAlertForProduct(product.id)
+                    ? 'bg-amber-50 text-amber-800 border-amber-300'
+                    : 'bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-300 hover:border-neutral-400'
+                }`}
+              >
+                {hasPriceAlertForProduct(product.id) ? (
+                  <>
+                    <BellRing className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                    <span>Price Alert Active</span>
+                  </>
+                ) : (
+                  <>
+                    <Bell className="w-3.5 h-3.5 text-neutral-500" />
+                    <span>Set Price Drop Alert</span>
+                  </>
+                )}
+              </button>
+
+              {/* Compare Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (isInCompare(product.id)) {
+                    removeFromCompare(product.id);
+                    setCompareToast('Removed from comparison');
+                  } else {
+                    const res = addToCompare(product);
+                    if (res.success) {
+                      setCompareToast('Added to comparison matrix');
+                    } else {
+                      setCompareToast(res.reason || 'Cannot add to compare');
+                    }
+                  }
+                  setTimeout(() => setCompareToast(null), 2500);
+                }}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                  isInCompare(product.id)
+                    ? 'bg-red-50 text-red-700 border-red-300'
+                    : 'bg-white hover:bg-neutral-50 text-neutral-700 border-neutral-300 hover:border-neutral-400'
+                }`}
+              >
+                <Scale className={`w-3.5 h-3.5 ${isInCompare(product.id) ? 'text-red-600' : 'text-neutral-500'}`} />
+                <span>{isInCompare(product.id) ? 'In Compare List' : 'Compare Specs'}</span>
+              </button>
+            </div>
+
+            {/* Compare feedback banner */}
+            {compareToast && (
+              <div className="p-2 bg-neutral-900 text-white text-[11px] font-medium rounded-xl flex items-center justify-between animate-in fade-in">
+                <span>{compareToast}</span>
+                <button
+                  type="button"
+                  onClick={openCompareModal}
+                  className="text-red-400 underline font-bold text-[10px] cursor-pointer"
+                >
+                  View Matrix →
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Delivery & Seller Information Box */}
           <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/80 space-y-3 text-xs">
             <div className="flex items-start gap-3">
@@ -415,7 +493,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 </span>
               </div>
               <button 
-                onClick={() => alert('Connected with Seller Store Support Representative.')}
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('nexus_open_support_chat', { detail: { product } }));
+                }}
                 className="text-[11px] text-red-600 font-bold hover:underline cursor-pointer flex items-center gap-1"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
@@ -933,6 +1013,70 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           ))}
         </div>
       </section>
+
+      {/* Price Drop Alert Configuration Modal */}
+      <PriceDropAlertModal
+        product={product}
+        isOpen={showPriceAlertModal}
+        onClose={() => setShowPriceAlertModal(false)}
+      />
+
+      {/* Mobile-Only Sticky App Bottom Action Bar (App Experience) */}
+      <div 
+        aria-label="Mobile Sticky Action Bar"
+        className="md:hidden fixed bottom-14 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-neutral-200/90 px-3 py-2 flex items-center gap-2 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+      >
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(
+              new CustomEvent('nexus_open_support_chat', { detail: { product } })
+            );
+          }}
+          className="flex flex-col items-center justify-center w-11 h-11 rounded-xl text-neutral-600 hover:text-red-600 hover:bg-neutral-100 transition-colors shrink-0 cursor-pointer"
+          title="Chat with AI Concierge"
+        >
+          <MessageCircle className="w-5 h-5 text-red-600" />
+          <span className="text-[9px] font-bold mt-0.5">Chat</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => toggleWishlist(product.id)}
+          className="flex flex-col items-center justify-center w-11 h-11 rounded-xl text-neutral-600 hover:text-red-600 hover:bg-neutral-100 transition-colors shrink-0 cursor-pointer"
+          title="Save to Wishlist"
+        >
+          <Heart className={`w-5 h-5 ${wishlisted ? 'fill-red-600 text-red-600' : ''}`} />
+          <span className="text-[9px] font-bold mt-0.5">{wishlisted ? 'Saved' : 'Wish'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="flex-1 h-11 rounded-xl bg-neutral-900 active:bg-neutral-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+        >
+          {addedToast ? (
+            <>
+              <Check className="w-4 h-4 text-emerald-400" />
+              <span>Added!</span>
+            </>
+          ) : (
+            <>
+              <ShoppingBag className="w-4 h-4" />
+              <span>Add to Bag</span>
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleInstantBuyNow}
+          className="flex-1 h-11 rounded-xl bg-red-600 active:bg-red-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer"
+        >
+          <Zap className="w-4 h-4 fill-white" />
+          <span>Buy Now ({formatBDT(currentPriceBDT * quantity)})</span>
+        </button>
+      </div>
 
     </div>
   );
